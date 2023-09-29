@@ -1,6 +1,5 @@
 import { OpenAIChatMessage } from "modelfusion";
 import { ProductSearchResult } from "../../grocers/grocer";
-import { MealPlan } from "./createMealPlan";
 import zodToJsonSchema from "zod-to-json-schema";
 import { z } from "zod";
 
@@ -35,10 +34,9 @@ export const pickProductFunction = {
   parameters: zodToJsonSchema(pickProductSchema),
 };
 
+// TODO: include meals it's used in
 export const pickProduct = async (
   ingredient: string,
-  // useful context to know the user's budget
   customerContext: string,
-  mealPlan: MealPlan,
   productSearchResults: ProductSearchResult[]
 ) => {};

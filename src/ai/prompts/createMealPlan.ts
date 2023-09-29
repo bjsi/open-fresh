@@ -1,13 +1,11 @@
 // considerations:
 // 1. calories / macros
-// 2. cuisine preferences
-// 3. examples of foods you like
-// 3. time
-// 4. equipment
-// 5. budget
+// incl. quantities
+// 2. cuisines you like / examples of foods you like
 // 6. dietary restrictions
-// 7. number of meals per day
-// 8. snacks
+// 3. time per meal
+// 5. budget (per week or per meal)
+// 7. what meals per day (eg. breakfast, snack, lunch, snack, dinner)
 
 import { z } from "zod";
 

@@ -21,6 +21,14 @@ export interface ProductSearchResult {
   rating?: string;
 }
 
+export enum AddToCartFail {
+  "SeleniumError" = "Selenium error",
+  "unknown" = "Unknown error",
+}
+export const ADD_TO_CART_SUCCESS = "Successfully added to cart." as const;
+
+// TODO: include screenshot in fail
+
 export abstract class Grocer {
   protected driver: WebDriver;
 
@@ -33,4 +41,8 @@ export abstract class Grocer {
     test?: boolean;
   }): Promise<Either<SearchFail, ProductSearchResult[]>>;
   abstract login(): Promise<Either<LoginFail, typeof LOGIN_SUCCESS>>;
+  abstract addToCart(args: {
+    itemUrl: string;
+    quantity: number;
+  }): Promise<Either<AddToCartFail, typeof ADD_TO_CART_SUCCESS>>;
 }

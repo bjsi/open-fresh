@@ -8,6 +8,11 @@ import {
   pickProductSchema,
 } from "./prompts/pickProduct";
 import { exampleProductData } from "../grocers/sainsburys";
+import {
+  extractIngredientsFunction,
+  extractIngredientsPrompt,
+  ingredientExtractorSchema,
+} from "./prompts/extractIngredients";
 
 dotenv.config();
 
@@ -72,6 +77,51 @@ const promptTests: Record<string, EvaluateTestSuite> = {
             `I go to the gym a lot so I need high protein.`,
         },
         assert: [assertValidSchema(pickProductSchema)],
+      },
+    ],
+  },
+  "extract-ingredients": {
+    ...testOptions({
+      prompt: extractIngredientsPrompt,
+      functions: [extractIngredientsFunction],
+    }),
+    tests: [
+      {
+        vars: {
+          mealPlan: `
+Lunch Plan
+Day 1: Tofu Stir-Fry
+Ingredients: Firm tofu, bell peppers, onions, soy sauce, olive oil
+Protein Source: Firm tofu
+Steps:
+Pan-fry cubed tofu until golden.
+Stir-fry bell peppers and onions.
+Mix with soy sauce.
+Day 2: Chicken Teriyaki Rice Bowl
+Ingredients: Chicken breast, teriyaki sauce, rice, broccoli
+Protein Source: Chicken breast
+Steps:
+Grill chicken and coat with teriyaki sauce.
+Steam rice and broccoli.
+Assemble in a bowl.
+Dinner Plan
+Day 1: Beef and Broccoli Stir-Fry
+Ingredients: Beef strips, broccoli, garlic, soy sauce, olive oil
+Protein Source: Beef strips
+Steps:
+Stir-fry beef strips until brown.
+Add broccoli and garlic.
+Drizzle soy sauce and cook until broccoli is tender.
+Day 2: Spicy Prawn Noodles
+Ingredients: Prawns, noodles, chili flakes, garlic, olive oil
+Protein Source: Prawns
+Steps:
+Cook noodles.
+Sauté prawns and garlic.
+Toss with noodles and chili flakes.          
+          `.trim(),
+        },
+        assert: [assertValidSchema(ingredientExtractorSchema)],
       },
     ],
   },

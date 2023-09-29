@@ -5,6 +5,8 @@ import {
   LoginFail,
   SearchFail,
   ProductSearchResult,
+  ADD_TO_CART_SUCCESS,
+  AddToCartFail,
 } from "./grocer";
 import dotenv from "dotenv";
 import { fail, success } from "../either";
@@ -187,6 +189,16 @@ export class Sainsburys extends Grocer {
         By.id("onetrust-accept-btn-handler")
       );
       await acceptCookiesButton.click();
+    }
+  }
+
+  async addToCart(args: { itemUrl: string; quantity: number }) {
+    try {
+      await this.driver.get(args.itemUrl);
+      await this.acceptCookies();
+      return success(ADD_TO_CART_SUCCESS);
+    } catch {
+      return fail(AddToCartFail.SeleniumError);
     }
   }
 
