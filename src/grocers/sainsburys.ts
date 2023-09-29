@@ -196,6 +196,20 @@ export class Sainsburys extends Grocer {
     try {
       await this.driver.get(args.itemUrl);
       await this.acceptCookies();
+      await this.driver.wait(
+        until.elementLocated(By.css('[data-test-id="add-button"]')),
+        10_000
+      );
+      const addToCartButton = await this.driver.findElement(
+        By.css('[data-test-id="add-button"]')
+      );
+      await addToCartButton.click();
+      const addQuantityButton = await this.driver.findElement(
+        By.css('[data-test-id="pt-button-inc"]')
+      );
+      for (let i = 0; i < args.quantity - 1; i++) {
+        await addQuantityButton.click();
+      }
       return success(ADD_TO_CART_SUCCESS);
     } catch {
       return fail(AddToCartFail.SeleniumError);

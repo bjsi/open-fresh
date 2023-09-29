@@ -16,10 +16,10 @@
   "dependencies": {
     "chromedriver": "^117.0.3",
     "dotenv": "^16.3.1",
-    "modelfusion": "^0.35.2",
+    "modelfusion": "0.33.1",
+    "zod": "^3.21.4",
+    "zod-to-json-schema": "^3.21.4",
     "promptfoo": "^0.24.3",
-    "selenium-webdriver": "^4.13.0",
-    "zod": "^3.22.2",
-    "zod-to-json-schema": "^3.21.4"
+    "selenium-webdriver": "^4.13.0"
   }
 }

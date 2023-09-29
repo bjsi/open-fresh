@@ -13,6 +13,7 @@ import {
   extractIngredientsPrompt,
   ingredientExtractorSchema,
 } from "./prompts/extractIngredients";
+import { mealPlanPrompt } from "./prompts/createMealPlan";
 
 dotenv.config();
 
@@ -58,7 +59,35 @@ const assertValidSchema = (schema: z.ZodSchema<any>) => {
   } as const;
 };
 
+// considerations:
+// 1. calories / macros
+// incl. quantities
+// 2. cuisines you like / examples of foods you like
+// 6. dietary restrictions
+// 3. time per meal
+// 5. budget (per week or per meal)
+// 7. what meals per day (eg. breakfast, snack, lunch, snack, dinner)
+
 const promptTests: Record<string, EvaluateTestSuite> = {
+  "meal-plan": {
+    ...testOptions({
+      prompt: mealPlanPrompt,
+    }),
+    defaultTest: {},
+    tests: [
+      {
+        vars: {
+          requirements:
+            `Create a lunch and dinner plan for me for the week. ` +
+            `each meal should take max 15 mins to create. ` +
+            `I like asian food, but I live in the UK so can't get obscure ingredients. ` +
+            `I go to the gym a lot so I need high protein.`,
+          day: "Monday",
+        },
+        assert: [],
+      },
+    ],
+  },
   "pick-product": {
     ...testOptions({
       prompt: pickProductPrompt,
@@ -89,36 +118,38 @@ const promptTests: Record<string, EvaluateTestSuite> = {
       {
         vars: {
           mealPlan: `
-Lunch Plan
-Day 1: Tofu Stir-Fry
-Ingredients: Firm tofu, bell peppers, onions, soy sauce, olive oil
-Protein Source: Firm tofu
-Steps:
-Pan-fry cubed tofu until golden.
-Stir-fry bell peppers and onions.
-Mix with soy sauce.
-Day 2: Chicken Teriyaki Rice Bowl
-Ingredients: Chicken breast, teriyaki sauce, rice, broccoli
-Protein Source: Chicken breast
-Steps:
-Grill chicken and coat with teriyaki sauce.
-Steam rice and broccoli.
-Assemble in a bowl.
-Dinner Plan
-Day 1: Beef and Broccoli Stir-Fry
-Ingredients: Beef strips, broccoli, garlic, soy sauce, olive oil
-Protein Source: Beef strips
-Steps:
-Stir-fry beef strips until brown.
-Add broccoli and garlic.
-Drizzle soy sauce and cook until broccoli is tender.
-Day 2: Spicy Prawn Noodles
-Ingredients: Prawns, noodles, chili flakes, garlic, olive oil
-Protein Source: Prawns
-Steps:
-Cook noodles.
-Sauté prawns and garlic.
-Toss with noodles and chili flakes.          
+Lunch: Teriyaki Chicken Stir Fry
+Ingredients:
+- 200g chicken breast
+- 100g broccoli
+- 100g bell peppers
+- 50g onion
+- 30g teriyaki sauce
+- 15g olive oil
+- 5g sesame seeds
+Instructions:
+1. Cut the chicken breast into thin slices.
+2. Heat the olive oil in a pan over medium heat.
+3. Add the chicken to the pan and cook until it's no longer pink.
+4. Add the broccoli, bell peppers, and onion to the pan and stir fry for about 5 minutes.
+5. Pour the teriyaki sauce over the chicken and vegetables and stir well to combine.
+6. Sprinkle the sesame seeds over the top and serve.
+
+Dinner: Beef and Vegetable Stir Fry
+Ingredients:
+- 200g beef strips
+- 100g bell peppers
+- 100g snap peas
+- 50g onion
+- 30g soy sauce
+- 15g olive oil
+- 5g sesame seeds
+Instructions:
+1. Heat the olive oil in a pan over medium heat.
+2. Add the beef strips to the pan and cook until they're browned.
+3. Add the bell peppers, snap peas, and onion to the pan and stir fry for about 5 minutes.
+4. Pour the soy sauce over the beef and vegetables and stir well to combine.
+5. Sprinkle the sesame seeds over the top and serve.        
           `.trim(),
         },
         assert: [assertValidSchema(ingredientExtractorSchema)],

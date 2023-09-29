@@ -1,26 +1,25 @@
-// considerations:
-// 1. calories / macros
-// incl. quantities
-// 2. cuisines you like / examples of foods you like
-// 6. dietary restrictions
-// 3. time per meal
-// 5. budget (per week or per meal)
-// 7. what meals per day (eg. breakfast, snack, lunch, snack, dinner)
+import { OpenAIChatMessage, OpenAIChatModel, generateText } from "modelfusion";
+import { compilePrompt } from "./compilePrompt";
+export const mealPlanPrompt = [
+  OpenAIChatMessage.system(
+    `You are a private chef preparing a weekly meal plan for your customer. ` +
+      `You need to create a meal plan that meets your customer's requirements. ` +
+      `For each meal, you should create a recipe that includes the ingredients and instructions. ` +
+      `You should write ingredient quantities in grams. `
+  ),
+  OpenAIChatMessage.user(`Customer requirements: {{ requirements }}.`.trim()),
+  OpenAIChatMessage.user(`Send me the meal plan for {{ day }}.`.trim()),
+];
 
-import { z } from "zod";
-
-const mealSchema = z.object({
-  meal: z.string(),
-});
-
-export const mealPlanSchema = z.object({
-  monday: mealSchema,
-  tuesday: mealSchema,
-  wednesday: mealSchema,
-  thursday: mealSchema,
-  friday: mealSchema,
-  saturday: mealSchema,
-  sunday: mealSchema,
-});
-
-export type MealPlan = z.infer<typeof mealPlanSchema>;
+export const createMealPlan = async (vars: {
+  requirements: string;
+  day: string;
+}) => {
+  const text = await generateText(
+    new OpenAIChatModel({
+      model: "gpt-4",
+    }),
+    compilePrompt(mealPlanPrompt, vars)
+  );
+  return text;
+};
