@@ -1,45 +1,10 @@
 // Meal Plan Agent
 
 import { z } from "zod";
-
-// considerations:
-// 1. calories / macros
-// 2. cuisine preferences
-// 3. examples of foods you like
-// 3. time
-// 4. equipment
-// 5. budget
-// 6. dietary restrictions
-// 7. number of meals per day
-// 8. snacks
-
-const mealSchema = z.object({
-  meal: z.string(),
-});
-
-const mealPlanSchema = z.object({
-  monday: mealSchema,
-  tuesday: mealSchema,
-  wednesday: mealSchema,
-  thursday: mealSchema,
-  friday: mealSchema,
-  saturday: mealSchema,
-  sunday: mealSchema,
-});
+import { ProductSearchResult } from "../grocers/grocer";
+import { OpenAIChatMessage } from "modelfusion";
 
 // would be good to be able to give feedback on specific recipes
-
-// Ingredient Extractor Prompt
-
-const ingredientExtractorSchema = z.object({
-  ingredients: z.array(
-    z.object({
-      name: z.string(),
-      quantity: z.number(),
-      specialConsiderations: z.string().optional(),
-    })
-  ),
-});
 
 // foreach ingredient grocer.search(ingredient.name) returns
 // a big array of products
@@ -57,7 +22,94 @@ const ingredientExtractorSchema = z.object({
 //  },
 // ...
 
-// Ingredient Purchasing Agent
+// export const fixNextTypeError = async (config: FixNextTypeErrorConfig) => {
+//   const messages = [
+//     OpenAIChatMessage.system(
+//       `Two expert TypeScript programmers are fixing a type error. ` +
+//         `Their type error solving strategy is as follows: 1) They read the error context source code thoroughly and note any details that could help solve the type error. ` +
+//         `2) They come up with hypotheses and debate the best way to fix the error. 3) They agree on a next step and take it.`
+//     ),
+//   ];
+
+//   const typeErrs = await trpc.getNextTypeErrorInFile.query({
+//     file: config.startFile,
+//   });
+//   if (!typeErrs.success) {
+//     console.log("Failed to get type errors");
+//     return;
+//   }
+
+//   const typeErr = typeErrs.data;
+//   const context = typeErr.source_code;
+
+//   messages.push(
+//     OpenAIChatMessage.user(
+//       `Error:
+// ${JSON.stringify(omit(typeErr, ["source_code"]), null, 2)}
+
+// Please look at the context below and reason about what to do next:
+
+// Context:
+// ${context}
+// `.trim()
+//     )
+//   );
+
+//   const runId = new Date().toISOString();
+//   const runLogFile = projectRoot + "/runs/" + runId + ".json";
+
+//   while (true) {
+//     const msgs = JSON.stringify(messages, null, 2);
+//     console.log(msgs);
+//     if (config.runLoggingEnabled) {
+//       writeFileSync(runLogFile, msgs, "utf-8");
+//     }
+//     try {
+//       const { tool, parameters, result, text } = await useToolOrGenerateText(
+//         new OpenAIChatModel({
+//           model: config.modelName ?? "gpt-4",
+//           temperature: 0,
+//           maxCompletionTokens: 2000,
+//         }),
+//         [
+//           findDeclaration,
+//           getSourceCode,
+//           getSourceCodeFor,
+//           searchTool,
+//           writeTextToFile,
+//           taskComplete,
+//         ],
+//         OpenAIChatFunctionPrompt.forToolsCurried(messages)
+//       );
+
+//       switch (tool) {
+//         case null: {
+//           console.log(`TEXT: ${result}\n`);
+//           messages.push(OpenAIChatMessage.assistant(text));
+//           break;
+//         }
+//         case "taskComplete":
+//           console.log(`TASK COMPLETE\n`);
+//           break;
+//         default:
+//           console.log(
+//             `TOOL: ${tool}\nPARAMETERS: ${JSON.stringify(
+//               parameters,
+//               null,
+//               2
+//             )}\n`
+//           );
+//           messages.push(OpenAIChatMessage.toolCall({ text, tool, parameters }));
+//           messages.push(OpenAIChatMessage.toolResult({ tool, result }));
+//       }
+//     } catch (e) {
+//       if (e instanceof SchemaValidationError) {
+//         console.log(`Schema validation error: ${e.message}`);
+//         messages.push(OpenAIChatMessage.system(e.message));
+//       }
+//     }
+//   }
+// };
 
 // pick a product, add to cart
 
