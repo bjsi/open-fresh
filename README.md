@@ -2,6 +2,8 @@
 
 An Open Source AI version of Hello Fresh.
 
+**Work in Progress**
+
 ## Features
 
 - The AI prepares a custom meal plan tailored to you.
