@@ -84,13 +84,13 @@ export async function extractIngredients(
 
 export const exampleIngredients = [
   {
-    name: "Bread",
-    totalQuantity: "100g",
+    name: "Extra Firm Tofu",
+    totalQuantity: "200g",
     mealsUsedIn: ["Tofu Scramble Sandwich"],
   },
   {
-    name: "Extra Firm Tofu",
-    totalQuantity: "200g",
+    name: "Bread",
+    totalQuantity: "100g",
     mealsUsedIn: ["Tofu Scramble Sandwich"],
   },
   {

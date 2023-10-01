@@ -125,6 +125,7 @@ export const exampleProductData: ProductSearchResult[] = [
 
 export class Sainsburys extends Grocer {
   async search(args: { query: string; test?: boolean }) {
+    console.log(`Searching for ${args.query}...}`)
     if (args.test) {
       return success(exampleProductData);
     }
@@ -140,7 +141,8 @@ export class Sainsburys extends Grocer {
       );
       const elements = await this.driver.findElements(By.css(".pt__content"));
       const products = await Promise.all(elements.map(this.extractProductInfo));
-      console.log(JSON.stringify(products, null, 2));
+      console.log(`Found ${products.length} products: `)
+      console.log(JSON.stringify(products.slice(0, 5), null, 2));
       return success(products);
     } catch {
       return fail(SearchFail.SeleniumError);
@@ -217,6 +219,7 @@ export class Sainsburys extends Grocer {
   }
 
   async login() {
+    console.log("Logging in...")
     const email = process.env.SAINSBURYS_EMAIL;
     const password = process.env.SAINSBURYS_PASSWORD;
     if (!email) {

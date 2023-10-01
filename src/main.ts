@@ -3,6 +3,7 @@ import { Sainsburys } from "./grocers/sainsburys";
 import dotenv from "dotenv";
 import {
   Ingredient,
+  exampleIngredients,
   extractIngredients,
   ingredientExtractorSchema,
 } from "./ai/prompts/extractIngredients";
@@ -55,11 +56,13 @@ const createWeekOfMeals = async () => {
   return meals;
 };
 
-const extractIngredientsFromWeekOfMeals = async (weekOfMeals: string[]) => {
+const extractIngredientsFromWeekOfMeals = async (args: {
+  weekOfMeals: string[];
+}) => {
   console.log("Extracting ingredients...");
   const ingredientsStream = await extractIngredients(
     {
-      mealPlans: weekOfMeals.join("\n"),
+      mealPlans: args.weekOfMeals.join("\n"),
     },
     true
   );
@@ -82,14 +85,20 @@ const extractIngredientsFromWeekOfMeals = async (weekOfMeals: string[]) => {
   return [];
 };
 
-const addAllIngredientsToCart = async (ingredients: Ingredient[]) => {
+const addAllIngredientsToCart = async (args: {
+  ingredients: Ingredient[];
+  test?: boolean;
+}) => {
   const driver = await new Builder().forBrowser("chrome").build();
   const grocer = new Sainsburys(driver);
 
   await grocer.login();
 
-  for (const ingredient of ingredients) {
-    const products = await grocer.search({ query: ingredient.name });
+  for (const ingredient of args.ingredients) {
+    const products = await grocer.search({
+      query: ingredient.name,
+      test: args.test,
+    });
     if (products.type === "success") {
       const choice = await pickProduct(
         {
@@ -121,9 +130,12 @@ const addAllIngredientsToCart = async (ingredients: Ingredient[]) => {
 };
 
 async function main() {
-  const weekOfMeals = await createWeekOfMeals();
-  const ingredients = await extractIngredientsFromWeekOfMeals(weekOfMeals);
-  await addAllIngredientsToCart(ingredients);
+  // const weekOfMeals = await createWeekOfMeals();
+  // const ingredients = await extractIngredientsFromWeekOfMeals({
+  //   weekOfMeals,
+  // });
+  const ingredients = exampleIngredients;
+  await addAllIngredientsToCart({ ingredients, test: true });
 }
 
 main();
