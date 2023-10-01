@@ -14,3 +14,15 @@ An Open Source AI version of Hello Fresh.
 ## How To Use
 
 - Coming Soon
+
+## Development
+
+- `git clone`
+- `npm i`
+- `npm run dev`
+
+### Prompt Evals
+
+- see `aiTests.ts` for tests
+- `npm run test` to run the entire prompt test suite
+- `npm run test <test name>` to run a particular test
