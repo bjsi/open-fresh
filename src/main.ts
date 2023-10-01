@@ -134,7 +134,7 @@ async function main() {
   // const ingredients = await extractIngredientsFromWeekOfMeals({
   //   weekOfMeals,
   // });
-  const ingredients = exampleIngredients;
+  const ingredients = exampleIngredients.slice(0, 1);
   await addAllIngredientsToCart({ ingredients, test: true });
 }
 

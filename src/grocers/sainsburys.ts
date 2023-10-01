@@ -124,8 +124,9 @@ export const exampleProductData: ProductSearchResult[] = [
 ];
 
 export class Sainsburys extends Grocer {
+  // TODO: navigate to search using UI, otherwise you lose login state
   async search(args: { query: string; test?: boolean }) {
-    console.log(`Searching for ${args.query}...}`)
+    console.log(`Searching for ${args.query}...}`);
     if (args.test) {
       return success(exampleProductData);
     }
@@ -141,7 +142,7 @@ export class Sainsburys extends Grocer {
       );
       const elements = await this.driver.findElements(By.css(".pt__content"));
       const products = await Promise.all(elements.map(this.extractProductInfo));
-      console.log(`Found ${products.length} products: `)
+      console.log(`Found ${products.length} products: `);
       console.log(JSON.stringify(products.slice(0, 5), null, 2));
       return success(products);
     } catch {
@@ -198,13 +199,9 @@ export class Sainsburys extends Grocer {
     try {
       await this.driver.get(args.itemUrl);
       await this.acceptCookies();
-      await this.driver.wait(
-        until.elementLocated(By.css('[data-test-id="add-button"]')),
-        10_000
-      );
-      const addToCartButton = await this.driver.findElement(
-        By.css('[data-test-id="add-button"]')
-      );
+      const addBtnCss = '[data-test-id="add-button"]';
+      await this.driver.wait(until.elementLocated(By.css(addBtnCss)), 10_000);
+      const addToCartButton = await this.driver.findElement(By.css(addBtnCss));
       await addToCartButton.click();
       const addQuantityButton = await this.driver.findElement(
         By.css('[data-test-id="pt-button-inc"]')
@@ -213,13 +210,13 @@ export class Sainsburys extends Grocer {
         await addQuantityButton.click();
       }
       return success(ADD_TO_CART_SUCCESS);
-    } catch {
+    } catch (e) {
       return fail(AddToCartFail.SeleniumError);
     }
   }
 
   async login() {
-    console.log("Logging in...")
+    console.log("Logging in...");
     const email = process.env.SAINSBURYS_EMAIL;
     const password = process.env.SAINSBURYS_PASSWORD;
     if (!email) {
