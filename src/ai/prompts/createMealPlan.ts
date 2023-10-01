@@ -1,4 +1,9 @@
-import { OpenAIChatMessage, OpenAIChatModel, generateText } from "modelfusion";
+import {
+  OpenAIChatMessage,
+  OpenAIChatModel,
+  generateText,
+  streamText,
+} from "modelfusion";
 import { compilePrompt } from "./compilePrompt";
 
 export const mealPlanPrompt = [
@@ -12,18 +17,24 @@ export const mealPlanPrompt = [
   OpenAIChatMessage.user(`Send me the meal plan for {{ day }}.`.trim()),
 ];
 
-export const createMealPlan = async (vars: {
+type CreateMealPlanVars = {
   requirements: string;
   day: string;
-}) => {
-  const text = await generateText(
-    new OpenAIChatModel({
-      model: "gpt-4",
-    }),
-    compilePrompt(mealPlanPrompt, vars)
-  );
-  return text;
 };
+
+export async function createMealPlanForDay(
+  vars: CreateMealPlanVars,
+  stream: boolean
+): Promise<AsyncIterable<string> | string> {
+  const model = new OpenAIChatModel({
+    model: "gpt-4",
+  });
+  if (!stream) {
+    return await generateText(model, compilePrompt(mealPlanPrompt, vars));
+  } else {
+    return await streamText(model, compilePrompt(mealPlanPrompt, vars));
+  }
+}
 
 export const exampleMealPlanOneDay = `
 LUNCH - Tofu Scramble Sandwich

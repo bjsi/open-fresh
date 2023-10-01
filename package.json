@@ -4,7 +4,8 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "npx ts-node -T ./src/ai/aiTests.ts"
+    "test": "npx ts-node -T ./src/ai/aiTests.ts",
+    "dev": "npx ts-node -T ./src/main.ts"
   },
   "author": "",
   "license": "ISC",
@@ -16,10 +17,11 @@
   "dependencies": {
     "chromedriver": "^117.0.3",
     "dotenv": "^16.3.1",
-    "modelfusion": "0.33.1",
-    "zod": "^3.21.4",
-    "zod-to-json-schema": "^3.21.4",
+    "modelfusion": "^0.35.2",
     "promptfoo": "^0.24.3",
-    "selenium-webdriver": "^4.13.0"
+    "remeda": "^1.27.0",
+    "selenium-webdriver": "^4.13.0",
+    "zod": "^3.21.4",
+    "zod-to-json-schema": "^3.21.4"
   }
 }

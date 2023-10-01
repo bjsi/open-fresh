@@ -1,9 +1,14 @@
 import { Builder } from "selenium-webdriver";
 import { Sainsburys } from "./grocers/sainsburys";
 import dotenv from "dotenv";
-import { createMealPlan } from "./ai/prompts/createMealPlan";
-import { extractIngredients } from "./ai/prompts/extractIngredients";
+import {
+  Ingredient,
+  extractIngredients,
+  ingredientExtractorSchema,
+} from "./ai/prompts/extractIngredients";
 import { pickProduct } from "./ai/prompts/pickProduct";
+import * as R from "remeda";
+import { createMealPlanForDay } from "./ai/prompts/createMealPlan";
 
 dotenv.config();
 
@@ -16,7 +21,7 @@ I go to the gym a lot so I need lots of vegetables and very high protein (50+gra
 The total cost for the week should come to less than 45 GBP.
 `.trim();
 
-(async function example() {
+const createWeekOfMeals = async () => {
   const days = [
     "Monday",
     // "Tuesday",
@@ -27,40 +32,78 @@ The total cost for the week should come to less than 45 GBP.
     // "Sunday",
   ];
   const meals: string[] = [];
-  console.log("Creating meal plan...");
-  for (const day of days) {
-    const mealPlan = await createMealPlan({
-      requirements,
-      day,
-    });
-    meals.push(mealPlan);
+  console.log("Creating week of meals...");
+  for (let i = 0; i < days.length; i++) {
+    const day = days[i];
+    console.log(`Creating meal plan for ${day}...`);
+    const mealPlanStream = await createMealPlanForDay(
+      {
+        requirements,
+        day,
+      },
+      true
+    );
+    for await (const textFragment of mealPlanStream) {
+      process.stdout.write(textFragment);
+      if (meals[i] === undefined) {
+        meals[i] = "";
+      }
+      meals[i] += textFragment;
+    }
   }
+  console.log("Done.");
+  return meals;
+};
 
-  console.log(meals.join("\n\n"));
-
+const extractIngredientsFromWeekOfMeals = async (weekOfMeals: string[]) => {
   console.log("Extracting ingredients...");
-  const { ingredients } = await extractIngredients({
-    mealPlan: meals.join("\n"),
-  });
+  const ingredientsStream = await extractIngredients(
+    {
+      mealPlans: weekOfMeals.join("\n"),
+    },
+    true
+  );
+  let lastIdx = 0;
+  for await (const fragment of ingredientsStream) {
+    if (fragment.isComplete) {
+      if (fragment.value.ingredients.length > 0) {
+        console.log(R.last(fragment.value.ingredients));
+      }
+      console.log("Done.");
+      return fragment.value.ingredients;
+    } else {
+      const parsed = ingredientExtractorSchema.safeParse(fragment.value);
+      if (parsed.success && parsed.data.ingredients.length - 1 > lastIdx) {
+        console.log(parsed.data.ingredients[lastIdx]);
+        lastIdx = parsed.data.ingredients.length - 1;
+      }
+    }
+  }
+  return [];
+};
 
-  console.log(JSON.stringify(ingredients, null, 2));
-
+const addAllIngredientsToCart = async (ingredients: Ingredient[]) => {
   const driver = await new Builder().forBrowser("chrome").build();
   const grocer = new Sainsburys(driver);
+
+  await grocer.login();
 
   for (const ingredient of ingredients) {
     const products = await grocer.search({ query: ingredient.name });
     if (products.type === "success") {
-      const choice = await pickProduct({
-        ingredient: ingredient.name,
-        customerContext: requirements,
-        quantity: ingredient.totalQuantity,
-        productSearchResults: JSON.stringify(
-          products.data.slice(0, 10),
-          null,
-          2
-        ),
-      });
+      const choice = await pickProduct(
+        {
+          ingredient: ingredient.name,
+          customerContext: requirements,
+          quantity: ingredient.totalQuantity,
+          productSearchResults: JSON.stringify(
+            products.data.slice(0, 10),
+            null,
+            2
+          ),
+        },
+        false
+      );
 
       console.log(JSON.stringify(choice, null, 2));
 
@@ -75,4 +118,12 @@ The total cost for the week should come to less than 45 GBP.
       console.log(res);
     }
   }
-})();
+};
+
+async function main() {
+  const weekOfMeals = await createWeekOfMeals();
+  const ingredients = await extractIngredientsFromWeekOfMeals(weekOfMeals);
+  await addAllIngredientsToCart(ingredients);
+}
+
+main();

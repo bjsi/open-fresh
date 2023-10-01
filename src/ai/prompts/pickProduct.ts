@@ -1,9 +1,10 @@
 import {
   OpenAIChatMessage,
   OpenAIChatModel,
+  StructureStreamPart,
   generateStructure,
+  streamStructure,
 } from "modelfusion";
-import { ProductSearchResult } from "../../grocers/grocer";
 import zodToJsonSchema from "zod-to-json-schema";
 import { z } from "zod";
 import { ZodSchema } from "./utils";
@@ -44,23 +45,47 @@ export const pickProductFunction = {
   parameters: zodToJsonSchema(pickProductSchema),
 };
 
-// TODO: include meals it's used in
-export const pickProduct = async (vars: {
+const pickProductStructure = {
+  name: pickProductFunction.name,
+  schema: new ZodSchema(pickProductSchema),
+  description: pickProductFunction.description,
+};
+
+type PickProductVars = {
   ingredient: string;
   customerContext: string;
   quantity: string;
   productSearchResults: string;
-}) => {
-  const text = await generateStructure(
-    new OpenAIChatModel({
-      model: "gpt-4",
-    }),
-    {
-      name: pickProductFunction.name,
-      schema: new ZodSchema(pickProductSchema),
-      description: pickProductFunction.description,
-    },
-    compilePrompt(pickProductPrompt, vars)
-  );
-  return text;
 };
+
+export async function pickProduct(
+  vars: PickProductVars,
+  stream: true
+): Promise<
+  AsyncIterable<StructureStreamPart<z.infer<typeof pickProductSchema>>>
+>;
+export async function pickProduct(
+  vars: PickProductVars,
+  stream: false
+): Promise<z.infer<typeof pickProductSchema>>;
+export async function pickProduct(vars: PickProductVars, stream: boolean) {
+  console.log(
+    `Picking the best product for ${vars.ingredient} (${vars.quantity})...`
+  );
+  const model = new OpenAIChatModel({
+    model: "gpt-4",
+  });
+  if (!stream) {
+    return await generateStructure(
+      model,
+      pickProductStructure,
+      compilePrompt(pickProductPrompt, vars)
+    );
+  } else {
+    return await streamStructure(
+      model,
+      pickProductStructure,
+      compilePrompt(pickProductPrompt, vars)
+    );
+  }
+}

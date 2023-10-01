@@ -2,7 +2,9 @@ import { z } from "zod";
 import {
   OpenAIChatMessage,
   OpenAIChatModel,
+  StructureStreamPart,
   generateStructure,
+  streamStructure,
 } from "modelfusion";
 import zodToJsonSchema from "zod-to-json-schema";
 import { ZodSchema } from "./utils";
@@ -13,7 +15,7 @@ export const extractIngredientsPrompt = [
     `You are a private chef purchasing ingredients for your customer's meals. ` +
       `You need to collect the ingredients required for the meals into a list so you can purchase them.`
   ),
-  OpenAIChatMessage.user(`Meal plan: {{ mealPlan }}`.trim()),
+  OpenAIChatMessage.user(`Meal plan: {{ mealPlans }}`.trim()),
 ];
 
 export const ingredientExtractorSchema = z.object({
@@ -26,26 +28,59 @@ export const ingredientExtractorSchema = z.object({
   ),
 });
 
+type IngredientExtractor = z.infer<typeof ingredientExtractorSchema>;
+
+export type Ingredient = z.infer<
+  typeof ingredientExtractorSchema
+>["ingredients"][0];
+
 export const extractIngredientsFunction = {
   name: "extractIngredients",
   description: "Extract ingredient information from a meal plan.",
   parameters: zodToJsonSchema(ingredientExtractorSchema),
 };
 
-export const extractIngredients = async (vars: { mealPlan: string }) => {
-  const text = await generateStructure(
-    new OpenAIChatModel({
-      model: "gpt-4",
-    }),
-    {
-      name: extractIngredientsFunction.name,
-      schema: new ZodSchema(ingredientExtractorSchema),
-      description: extractIngredientsFunction.description,
-    },
-    compilePrompt(extractIngredientsPrompt, vars)
-  );
-  return text;
+const extractIngredientsStructure = {
+  name: extractIngredientsFunction.name,
+  schema: new ZodSchema(ingredientExtractorSchema),
+  description: extractIngredientsFunction.description,
 };
+
+type ExtractIngredientsVars = {
+  mealPlans: string;
+};
+
+export async function extractIngredients(
+  vars: ExtractIngredientsVars,
+  stream: false
+): Promise<IngredientExtractor>;
+export async function extractIngredients(
+  vars: ExtractIngredientsVars,
+  stream: true
+): Promise<AsyncIterable<StructureStreamPart<IngredientExtractor>>>;
+export async function extractIngredients(
+  vars: ExtractIngredientsVars,
+  stream: boolean
+): Promise<
+  AsyncIterable<StructureStreamPart<IngredientExtractor>> | IngredientExtractor
+> {
+  const model = new OpenAIChatModel({
+    model: "gpt-4",
+  });
+  if (!stream) {
+    return await generateStructure(
+      model,
+      extractIngredientsStructure,
+      compilePrompt(extractIngredientsPrompt, vars)
+    );
+  } else {
+    return await streamStructure(
+      model,
+      extractIngredientsStructure,
+      compilePrompt(extractIngredientsPrompt, vars)
+    );
+  }
+}
 
 export const exampleIngredients = [
   {
