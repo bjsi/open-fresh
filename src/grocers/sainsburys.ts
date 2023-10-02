@@ -10,6 +10,7 @@ import {
 } from "./grocer";
 import dotenv from "dotenv";
 import { fail, success } from "../either";
+import { filterAsync } from "./seleniumHelpers";
 
 dotenv.config();
 
@@ -123,18 +124,32 @@ export const exampleProductData: ProductSearchResult[] = [
   },
 ];
 
+function getUrlFromProduct(element: WebElement) {
+  return element
+    .findElement(By.css(".pt__link"))
+    .getAttribute("href")
+    .then((url) => url);
+}
+
 export class Sainsburys extends Grocer {
-  // TODO: navigate to search using UI, otherwise you lose login state
   async search(args: { query: string; test?: boolean }) {
-    console.log(`Searching for ${args.query}...}`);
+    console.log(`Searching for ${args.query}...`);
     if (args.test) {
       return success(exampleProductData);
     }
     try {
-      const encodedQuery = encodeURIComponent(args.query);
-      await this.driver.get(
-        "https://www.sainsburys.co.uk/gol-ui/SearchResults/" + encodedQuery
-      );
+      await this.acceptCookies();
+
+      console.log(this.driver.findElements(By.id("search")));
+      // Find the search input element by its ID and type the search query.
+      await this.driver.wait(until.elementLocated(By.id("search")), 10_000);
+      let searchInput = await this.driver.findElement(By.id("search"));
+      await this.driver.wait(until.elementIsVisible(searchInput), 5000);
+      await searchInput.sendKeys(args.query);
+
+      // Find the search button by its ID and click it.
+      let searchButton = await this.driver.findElement(By.id("searchSubmit"));
+      await searchButton.submit();
       await this.acceptCookies();
       await this.driver.wait(
         until.elementLocated(By.css(".pt__content")),
@@ -145,7 +160,8 @@ export class Sainsburys extends Grocer {
       console.log(`Found ${products.length} products: `);
       console.log(JSON.stringify(products.slice(0, 5), null, 2));
       return success(products);
-    } catch {
+    } catch (e) {
+      console.log("Error searching.", e);
       return fail(SearchFail.SeleniumError);
     }
   }
@@ -156,9 +172,7 @@ export class Sainsburys extends Grocer {
       By.css('[data-test-id="product-tile-description"]')
     );
     const name = await productNameElement.getText();
-    const url = await element
-      .findElement(By.css(".pt__link"))
-      .getAttribute("href");
+    const url = await getUrlFromProduct(element);
 
     // Find the element containing the product price
     const productPriceElement = await element.findElement(
@@ -193,17 +207,22 @@ export class Sainsburys extends Grocer {
       );
       await acceptCookiesButton.click();
     }
+    await this.driver.sleep(2000); // animation
   }
 
   async addToCart(args: { itemUrl: string; quantity: number }) {
     try {
-      await this.driver.get(args.itemUrl);
-      await this.acceptCookies();
+      const productElemnt = (
+        await filterAsync(
+          await this.driver.findElements(By.css(".pt__content")),
+          async (e) => (await getUrlFromProduct(e)) === args.itemUrl
+        )
+      )[0];
+
       const addBtnCss = '[data-test-id="add-button"]';
-      await this.driver.wait(until.elementLocated(By.css(addBtnCss)), 10_000);
-      const addToCartButton = await this.driver.findElement(By.css(addBtnCss));
-      await addToCartButton.click();
-      const addQuantityButton = await this.driver.findElement(
+      const addToCartBtn = await productElemnt.findElement(By.css(addBtnCss));
+      await addToCartBtn.click();
+      const addQuantityButton = await productElemnt.findElement(
         By.css('[data-test-id="pt-button-inc"]')
       );
       for (let i = 0; i < args.quantity - 1; i++) {
@@ -246,8 +265,12 @@ export class Sainsburys extends Grocer {
       );
       await passwordField.sendKeys(password, Key.RETURN); // Assuming the form submits upon pressing Enter
 
-      // TODO: check for code screen
-      // "We've sent you a code"
+      // TODO: check for code screen ("We've sent you a code")
+      // could probably get around this by using users chrome user data dir
+      // TODO: try again screen - just need to click the button
+
+      await this.acceptCookies();
+      console.log("Logged in.");
     } catch (e) {
       return fail(LoginFail.SeleniumError);
     }

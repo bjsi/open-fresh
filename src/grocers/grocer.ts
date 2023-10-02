@@ -40,7 +40,9 @@ export abstract class Grocer {
     query: string;
     test?: boolean;
   }): Promise<Either<SearchFail, ProductSearchResult[]>>;
+
   abstract login(): Promise<Either<LoginFail, typeof LOGIN_SUCCESS>>;
+
   abstract addToCart(args: {
     itemUrl: string;
     quantity: number;

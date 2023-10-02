@@ -85,47 +85,45 @@ const extractIngredientsFromWeekOfMeals = async (args: {
   return [];
 };
 
-const addAllIngredientsToCart = async (args: {
-  ingredients: Ingredient[];
-  test?: boolean;
-}) => {
+const addAllIngredientsToCart = async (args: { ingredients: Ingredient[] }) => {
   const driver = await new Builder().forBrowser("chrome").build();
   const grocer = new Sainsburys(driver);
 
-  await grocer.login();
+  const loginRes = await grocer.login();
 
   for (const ingredient of args.ingredients) {
     const products = await grocer.search({
       query: ingredient.name,
-      test: args.test,
     });
-    if (products.type === "success") {
-      const choice = await pickProduct(
-        {
-          ingredient: ingredient.name,
-          customerContext: requirements,
-          quantity: ingredient.totalQuantity,
-          productSearchResults: JSON.stringify(
-            products.data.slice(0, 10),
-            null,
-            2
-          ),
-        },
-        false
-      );
-
-      console.log(JSON.stringify(choice, null, 2));
-
-      // TODO: selenium errs here
-      // TODO: need to be logged in to add to cart
-      const res = await grocer.addToCart({
-        itemUrl:
-          products.data.find((p) => p.name === choice.productName)?.url ?? "",
-        quantity: choice.numToAddToCart,
-      });
-
-      console.log(res);
+    if (products.type !== "success") {
+      console.log(products);
+      return;
     }
+
+    const choice = await pickProduct(
+      {
+        ingredient: ingredient.name,
+        customerContext: requirements,
+        quantity: ingredient.totalQuantity,
+        productSearchResults: JSON.stringify(
+          products.data.slice(0, 10),
+          null,
+          2
+        ),
+      },
+      false
+    );
+
+    console.log(JSON.stringify(choice, null, 2));
+
+    const res = await grocer.addToCart({
+      itemUrl:
+        // TODO
+        products.data.find((p) => p.name === choice.productName)?.url ?? "",
+      quantity: choice.numToAddToCart,
+    });
+
+    console.log(res);
   }
 };
 
@@ -135,7 +133,7 @@ async function main() {
   //   weekOfMeals,
   // });
   const ingredients = exampleIngredients.slice(0, 1);
-  await addAllIngredientsToCart({ ingredients, test: true });
+  await addAllIngredientsToCart({ ingredients });
 }
 
 main();
