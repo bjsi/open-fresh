@@ -2,8 +2,6 @@
 
 An Open Source AI version of Hello Fresh.
 
-**Work in Progress**
-
 ## Features
 
 - The AI prepares a custom meal plan tailored to you.
@@ -11,11 +9,7 @@ An Open Source AI version of Hello Fresh.
 - The AI uses selenium to go to your grocer of choice and adds the ingredients to your cart.
 - All you need to do is check out!
 
-## How To Use
-
-- Coming Soon
-
-## Development
+## How To Run
 
 - `git clone`
 - `npm i`

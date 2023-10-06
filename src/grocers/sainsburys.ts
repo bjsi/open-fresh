@@ -140,11 +140,13 @@ export class Sainsburys extends Grocer {
     try {
       await this.acceptCookies();
 
-      console.log(this.driver.findElements(By.id("search")));
-      // Find the search input element by its ID and type the search query.
+      // Find the search input element by its ID and wait for it to be visible and enabled.
       await this.driver.wait(until.elementLocated(By.id("search")), 10_000);
       let searchInput = await this.driver.findElement(By.id("search"));
       await this.driver.wait(until.elementIsVisible(searchInput), 5000);
+      await this.driver.wait(until.elementIsEnabled(searchInput), 5000);
+
+      // Type the search query into the search input field.
       await searchInput.sendKeys(args.query);
 
       // Find the search button by its ID and click it.
@@ -196,18 +198,25 @@ export class Sainsburys extends Grocer {
   }
 
   async acceptCookies() {
-    // Check if the cookie banner is displayed and accept cookies
-    let isCookieBannerDisplayed = await this.driver
-      .wait(until.elementLocated(By.id("onetrust-accept-btn-handler")), 10_000)
-      .catch(() => null);
-    await this.driver.sleep(2000); // animation
-    if (isCookieBannerDisplayed) {
-      let acceptCookiesButton = await this.driver.findElement(
-        By.id("onetrust-accept-btn-handler")
-      );
-      await acceptCookiesButton.click();
+    try {
+      // Check if the cookie banner is displayed and accept cookies
+      let isCookieBannerDisplayed = await this.driver
+        .wait(
+          until.elementLocated(By.id("onetrust-accept-btn-handler")),
+          10_000
+        )
+        .catch(() => null);
+      await this.driver.sleep(2000); // animation
+      if (isCookieBannerDisplayed) {
+        let acceptCookiesButton = await this.driver.findElement(
+          By.id("onetrust-accept-btn-handler")
+        );
+        await acceptCookiesButton.click();
+      }
+      await this.driver.sleep(2000); // animation
+    } catch (e) {
+      console.log("Error accepting cookies.", e);
     }
-    await this.driver.sleep(2000); // animation
   }
 
   async addToCart(args: { itemUrl: string; quantity: number }) {
