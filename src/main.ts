@@ -3,7 +3,6 @@ import { Sainsburys } from "./grocers/sainsburys";
 import dotenv from "dotenv";
 import {
   Ingredient,
-  exampleIngredients,
   extractIngredients,
   ingredientExtractorSchema,
 } from "./ai/prompts/extractIngredients";
@@ -17,12 +16,12 @@ const requirements = `
 Create a lunch and dinner plan for me for the week.
 Each meal should take max 20 mins to create.
 I like spicy asian food, like noodles and curry, korean, indian, chinese are all good.
-For lunch I also like to eat sandwiches with pickles.
-I go to the gym a lot so I need lots of vegetables and very high protein (50+grams per meal).
+I go to the gym a lot so I need lots of vegetables and very high protein (40+grams per meal).
 The total cost for the week should come to less than 45 GBP.
 `.trim();
 
-const createWeekOfMeals = async () => {
+// TODO: make it more generic
+const createMealPlan = async () => {
   const days = [
     "Monday",
     // "Tuesday",
@@ -128,11 +127,10 @@ const addAllIngredientsToCart = async (args: { ingredients: Ingredient[] }) => {
 };
 
 async function main() {
-  // const weekOfMeals = await createWeekOfMeals();
-  // const ingredients = await extractIngredientsFromWeekOfMeals({
-  //   weekOfMeals,
-  // });
-  const ingredients = exampleIngredients.slice(0, 1);
+  const weekOfMeals = await createMealPlan();
+  const ingredients = await extractIngredientsFromWeekOfMeals({
+    weekOfMeals,
+  });
   await addAllIngredientsToCart({ ingredients });
 }
 
