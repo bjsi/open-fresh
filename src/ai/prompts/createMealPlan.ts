@@ -1,42 +1,81 @@
 import {
   OpenAIChatMessage,
   OpenAIChatModel,
-  generateText,
-  streamText,
+  StructureStreamPart,
+  generateStructure,
+  streamStructure,
 } from "modelfusion";
 import { compilePrompt } from "./compilePrompt";
+import zodToJsonSchema from "zod-to-json-schema";
+import { z } from "zod";
+import { ZodSchema } from "./utils";
 
 export const mealPlanPrompt = [
   OpenAIChatMessage.system(
-    `You are a private chef preparing a weekly meal plan for your customer. ` +
+    `You are a private chef preparing a meal plan for your customer. ` +
       `You need to create a meal plan that meets your customer's requirements. ` +
-      `For each meal, you should create a recipe that includes the ingredients and instructions. ` +
+      `For each meal, write a detailed recipe that includes the meal type (breakfast, lunch, dinner, snack etc.), the ingredients, cooking instructions and day. ` +
       `You should write ingredient quantities in grams. `
   ),
   OpenAIChatMessage.user(`Customer requirements: {{ requirements }}.`.trim()),
-  OpenAIChatMessage.user(`Send me the meal plan for {{ day }}.`.trim()),
 ];
 
 type CreateMealPlanVars = {
   requirements: string;
-  day: string;
 };
 
-export async function createMealPlanForDay(
+type MealPlan = z.infer<typeof createMealPlanSchema>;
+
+export const createMealPlanSchema = z.object({
+  mealRecipes: z.array(z.string()),
+});
+
+export const createMealPlanFunction = {
+  name: "createMealPlan",
+  description: "Create a meal plan.",
+  parameters: zodToJsonSchema(createMealPlanSchema),
+};
+
+const createMealPlanStructure = {
+  name: createMealPlanFunction.name,
+  schema: new ZodSchema(createMealPlanSchema),
+  description: createMealPlanFunction.description,
+};
+
+export async function createMealPlan(
+  vars: CreateMealPlanVars,
+  stream: false
+): Promise<MealPlan>;
+export async function createMealPlan(
+  vars: CreateMealPlanVars,
+  stream: true
+): Promise<AsyncIterable<StructureStreamPart<MealPlan>>>;
+export async function createMealPlan(
   vars: CreateMealPlanVars,
   stream: boolean
-): Promise<AsyncIterable<string> | string> {
+): Promise<
+  | AsyncIterable<StructureStreamPart<MealPlan>>
+  | z.infer<typeof createMealPlanSchema>
+> {
   const model = new OpenAIChatModel({
     model: "gpt-4",
   });
   if (!stream) {
-    return await generateText(model, compilePrompt(mealPlanPrompt, vars));
+    return await generateStructure(
+      model,
+      createMealPlanStructure,
+      compilePrompt(mealPlanPrompt, vars)
+    );
   } else {
-    return await streamText(model, compilePrompt(mealPlanPrompt, vars));
+    return await streamStructure(
+      model,
+      createMealPlanStructure,
+      compilePrompt(mealPlanPrompt, vars)
+    );
   }
 }
 
-export const exampleMealPlanOneDay = `
+export const exampleMealPlan = `
 LUNCH - Tofu Scramble Sandwich
 
 Ingredients:

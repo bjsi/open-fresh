@@ -13,7 +13,9 @@ import { compilePrompt } from "./compilePrompt";
 export const extractIngredientsPrompt = [
   OpenAIChatMessage.system(
     `You are a private chef purchasing ingredients for your customer's meals. ` +
-      `You need to collect the ingredients required for the meals into a list so you can purchase them.`
+      `You need to extract the raw ingredients required for the meals into a list so you can purchase them. ` +
+      `For each ingredient, use generic ingredient names focusing only on the core item without the preparation state. ` +
+      `Ignore salt and pepper and cooking oil. `
   ),
   OpenAIChatMessage.user(`Meal plan: {{ mealPlans }}`.trim()),
 ];
@@ -21,7 +23,7 @@ export const extractIngredientsPrompt = [
 export const ingredientExtractorSchema = z.object({
   ingredients: z.array(
     z.object({
-      name: z.string(),
+      genericName: z.string(),
       totalQuantity: z.string(),
       mealsUsedIn: z.string().array(),
     })
@@ -84,27 +86,27 @@ export async function extractIngredients(
 
 export const exampleIngredients = [
   {
-    name: "Extra Firm Tofu",
+    genericName: "Extra Firm Tofu",
     totalQuantity: "200g",
     mealsUsedIn: ["Tofu Scramble Sandwich"],
   },
   {
-    name: "Bread",
+    genericName: "Bread",
     totalQuantity: "100g",
     mealsUsedIn: ["Tofu Scramble Sandwich"],
   },
   {
-    name: "Nutritional Yeast",
+    genericName: "Nutritional Yeast",
     totalQuantity: "20g",
     mealsUsedIn: ["Tofu Scramble Sandwich"],
   },
   {
-    name: "Turmeric",
+    genericName: "Turmeric",
     totalQuantity: "5g",
     mealsUsedIn: ["Tofu Scramble Sandwich"],
   },
   {
-    name: "Oil",
+    genericName: "Oil",
     totalQuantity: "10g",
     mealsUsedIn: [
       "Tofu Scramble Sandwich",
@@ -112,12 +114,12 @@ export const exampleIngredients = [
     ],
   },
   {
-    name: "Pickles",
+    genericName: "Pickles",
     totalQuantity: "50g",
     mealsUsedIn: ["Tofu Scramble Sandwich"],
   },
   {
-    name: "Spinach",
+    genericName: "Spinach",
     totalQuantity: "100g",
     mealsUsedIn: [
       "Tofu Scramble Sandwich",
@@ -125,42 +127,42 @@ export const exampleIngredients = [
     ],
   },
   {
-    name: "Chinese Noodles",
+    genericName: "Chinese Noodles",
     totalQuantity: "100g",
     mealsUsedIn: ["Spicy Chinese Szechuan Noodles with Chicken"],
   },
   {
-    name: "Chicken Breast",
+    genericName: "Chicken Breast",
     totalQuantity: "200g",
     mealsUsedIn: ["Spicy Chinese Szechuan Noodles with Chicken"],
   },
   {
-    name: "Ginger",
+    genericName: "Ginger",
     totalQuantity: "10g",
     mealsUsedIn: ["Spicy Chinese Szechuan Noodles with Chicken"],
   },
   {
-    name: "Garlic",
+    genericName: "Garlic",
     totalQuantity: "10g",
     mealsUsedIn: ["Spicy Chinese Szechuan Noodles with Chicken"],
   },
   {
-    name: "Szechuan Peppercorns",
+    genericName: "Szechuan Peppercorns",
     totalQuantity: "5g",
     mealsUsedIn: ["Spicy Chinese Szechuan Noodles with Chicken"],
   },
   {
-    name: "Soy Sauce",
+    genericName: "Soy Sauce",
     totalQuantity: "20ml",
     mealsUsedIn: ["Spicy Chinese Szechuan Noodles with Chicken"],
   },
   {
-    name: "Sesame Seeds",
+    genericName: "Sesame Seeds",
     totalQuantity: "5g",
     mealsUsedIn: ["Spicy Chinese Szechuan Noodles with Chicken"],
   },
   {
-    name: "Red Chilis",
+    genericName: "Red Chilis",
     totalQuantity: "10g",
     mealsUsedIn: ["Spicy Chinese Szechuan Noodles with Chicken"],
   },

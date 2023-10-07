@@ -13,7 +13,11 @@ import {
   extractIngredientsPrompt,
   ingredientExtractorSchema,
 } from "./prompts/extractIngredients";
-import { mealPlanPrompt } from "./prompts/createMealPlan";
+import {
+  createMealPlanFunction,
+  createMealPlanSchema,
+  mealPlanPrompt,
+} from "./prompts/createMealPlan";
 
 dotenv.config();
 
@@ -72,19 +76,18 @@ const promptTests: Record<string, EvaluateTestSuite> = {
   "meal-plan": {
     ...testOptions({
       prompt: mealPlanPrompt,
+      functions: [createMealPlanFunction],
     }),
-    defaultTest: {},
     tests: [
       {
         vars: {
           requirements:
-            `Create a lunch and dinner plan for me for the week. ` +
+            `Create a lunch and dinner plan for me for me on Monday. ` +
             `each meal should take max 15 mins to create. ` +
             `I like asian food, but I live in the UK so can't get obscure ingredients. ` +
             `I go to the gym a lot so I need high protein.`,
-          day: "Monday",
         },
-        assert: [],
+        assert: [assertValidSchema(createMealPlanSchema)],
       },
     ],
   },

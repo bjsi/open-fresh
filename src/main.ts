@@ -8,60 +8,50 @@ import {
 } from "./ai/prompts/extractIngredients";
 import { pickProduct } from "./ai/prompts/pickProduct";
 import * as R from "remeda";
-import { createMealPlanForDay } from "./ai/prompts/createMealPlan";
+import {
+  createMealPlan,
+  createMealPlanSchema,
+} from "./ai/prompts/createMealPlan";
+import { createDriverProxy } from "./selenium/driver";
+import { program } from "commander";
+import fs from "fs";
+import path from "path";
+import inquirer from "inquirer";
 
 dotenv.config();
 
-const requirements = `
-Create a lunch and dinner plan for me for the week.
-Each meal should take max 20 mins to create.
-I like spicy asian food, like noodles and curry, korean, indian, chinese are all good.
-I go to the gym a lot so I need lots of vegetables and very high protein (40+grams per meal).
-The total cost for the week should come to less than 45 GBP.
-`.trim();
-
-// TODO: make it more generic
-const createMealPlan = async () => {
-  const days = [
-    "Monday",
-    // "Tuesday",
-    // "Wednesday",
-    // "Thursday",
-    // "Friday",
-    // "Saturday",
-    // "Sunday",
-  ];
+const createAndLogMealPlan = async (requirements: string) => {
   const meals: string[] = [];
-  console.log("Creating week of meals...");
-  for (let i = 0; i < days.length; i++) {
-    const day = days[i];
-    console.log(`Creating meal plan for ${day}...`);
-    const mealPlanStream = await createMealPlanForDay(
-      {
-        requirements,
-        day,
-      },
-      true
-    );
-    for await (const textFragment of mealPlanStream) {
-      process.stdout.write(textFragment);
-      if (meals[i] === undefined) {
-        meals[i] = "";
+  const mealPlanStream = await createMealPlan(
+    {
+      requirements,
+    },
+    true
+  );
+  for await (const fragment of mealPlanStream) {
+    if (fragment.isComplete) {
+      if (fragment.value.mealRecipes.length > 0) {
+        console.log(R.last(fragment.value.mealRecipes));
       }
-      meals[i] += textFragment;
+      return fragment.value.mealRecipes;
+    } else {
+      const parsed = createMealPlanSchema.safeParse(fragment.value);
+      if (parsed.success) {
+        console.clear();
+        console.log("Creating meal plan...");
+        console.log(parsed.data.mealRecipes.join("\n\n"));
+      }
     }
   }
   console.log("Done.");
   return meals;
 };
 
-const extractIngredientsFromWeekOfMeals = async (args: {
-  weekOfMeals: string[];
-}) => {
+const extractAndLogIngredients = async (args: { meals: string[] }) => {
   console.log("Extracting ingredients...");
   const ingredientsStream = await extractIngredients(
     {
-      mealPlans: args.weekOfMeals.join("\n"),
+      mealPlans: args.meals.join("\n"),
     },
     true
   );
@@ -84,15 +74,21 @@ const extractIngredientsFromWeekOfMeals = async (args: {
   return [];
 };
 
-const addAllIngredientsToCart = async (args: { ingredients: Ingredient[] }) => {
-  const driver = await new Builder().forBrowser("chrome").build();
+const addAllIngredientsToCart = async (args: {
+  requirements: string;
+  ingredients: Ingredient[];
+}) => {
+  const driver = createDriverProxy(
+    await new Builder().forBrowser("chrome").build()
+  );
   const grocer = new Sainsburys(driver);
 
+  await grocer.openLoginPage();
   const loginRes = await grocer.login();
 
   for (const ingredient of args.ingredients) {
     const products = await grocer.search({
-      query: ingredient.name,
+      query: ingredient.genericName,
     });
     if (products.type !== "success") {
       console.log(products);
@@ -101,8 +97,8 @@ const addAllIngredientsToCart = async (args: { ingredients: Ingredient[] }) => {
 
     const choice = await pickProduct(
       {
-        ingredient: ingredient.name,
-        customerContext: requirements,
+        ingredient: ingredient.genericName,
+        customerContext: args.requirements,
         quantity: ingredient.totalQuantity,
         productSearchResults: JSON.stringify(
           products.data.slice(0, 10),
@@ -117,7 +113,6 @@ const addAllIngredientsToCart = async (args: { ingredients: Ingredient[] }) => {
 
     const res = await grocer.addToCart({
       itemUrl:
-        // TODO
         products.data.find((p) => p.name === choice.productName)?.url ?? "",
       quantity: choice.numToAddToCart,
     });
@@ -126,12 +121,100 @@ const addAllIngredientsToCart = async (args: { ingredients: Ingredient[] }) => {
   }
 };
 
-async function main() {
-  const weekOfMeals = await createMealPlan();
-  const ingredients = await extractIngredientsFromWeekOfMeals({
-    weekOfMeals,
-  });
-  await addAllIngredientsToCart({ ingredients });
-}
+program.version("1.0.0");
 
-main();
+program
+  .command("create-meal-plan")
+  .option("-r, --requirements <file>", "Requirements file for the meal plan")
+  .description("Create and log a meal plan")
+  .action(async (options) => {
+    let requirements: string | undefined;
+
+    if (options.requirements) {
+      const reqFilePath = path.join(__dirname, options.requirements);
+      requirements = fs.readFileSync(reqFilePath, "utf-8");
+    } else {
+      const answers = await inquirer.prompt([
+        {
+          type: "input",
+          name: "requirements",
+          message: `Enter any requirements you have for the meal plan. Here are some ideas (optional!):
+
+1. calories and macros
+2. cuisines you like / examples of foods you like
+6. dietary restrictions
+3. time to cook each meal
+5. budget (per week or per meal)
+7. what meals per day (eg. breakfast, snack, lunch, snack, dinner)
+`,
+        },
+      ]);
+
+      requirements = answers.requirements;
+    }
+
+    const { filename } = await inquirer.prompt([
+      {
+        type: "input",
+        name: "filename",
+        message: "Enter the filename for the meal plan:",
+        default: "meal-plan.txt",
+      },
+    ]);
+
+    const filePath = path.join(__dirname, "meal-plans", filename);
+    if (fs.existsSync(filePath)) {
+      console.log("Error: Filename already exists.");
+      return;
+    }
+    if (!requirements) {
+      return;
+    }
+
+    const meals = await createAndLogMealPlan(requirements);
+
+    fs.writeFileSync(
+      filePath,
+      JSON.stringify(
+        {
+          requirements,
+          meals,
+        },
+        null,
+        2
+      )
+    );
+  });
+
+program
+  .command("order-ingredients <mealPlanFile>")
+  .description("Order ingredients based on a meal plan file")
+  .action(async (mealPlanFile: string) => {
+    const mealPlanData = fs.readFileSync(
+      path.join(__dirname, mealPlanFile),
+      "utf-8"
+    );
+    const json = JSON.parse(mealPlanData) as {
+      meals: string[];
+      requirements: string;
+      ingredients?: Ingredient[];
+    };
+
+    let ingredients: Ingredient[];
+
+    if (json.ingredients) {
+      // Ingredients already exist in the JSON
+      console.log("Ingredients found in meal plan:", json.ingredients);
+      ingredients = json.ingredients;
+    } else {
+      // Ingredients need to be extracted
+      ingredients = await extractAndLogIngredients({ meals: json.meals });
+    }
+
+    await addAllIngredientsToCart({
+      ingredients,
+      requirements: json.requirements,
+    });
+  });
+
+program.parse(process.argv);

@@ -1,0 +1,78 @@
+{
+	"requirements": "Create a lunch and dinner plan for me for monday.\nEach meal should take max 20 mins to create.\nI like spicy asian food, like noodles and curry, korean, indian, chinese are all good.\nI go to the gym a lot so I need lots of vegetables and very high protein (40+grams per meal).",
+	"meals": [
+		"Lunch: Spicy Korean Bibimbap\nIngredients: \n- 200g cooked brown rice\n- 200g tofu\n- 150g spinach\n- 100g shredded carrots\n- 100g bean sprouts\n- 1 egg\n- 2 tablespoons gochujang (Korean hot pepper paste)\n- 1 tablespoon sesame oil\n- Salt and pepper to taste\nCooking Instructions: \n1. Cut tofu into small cubes and roast them in a pan with a little oil until browned. \n2. Saute each vegetable separately in a pan with a sprinkle of salt. \n3. To make the spicy sauce, combine gochujang, sesame oil, and a pinch of salt and pepper. \n4. Fry an egg. \n5. Arrange the vegetables and tofu over the cooked rice. \n6. Top with the fried egg and a spoonful of the spicy sauce.\n\nDinner: Quick Thai Green Chicken Curry\nIngredients: \n- 250g chicken breast\n- 150g Green Thai curry paste\n- 400ml coconut milk\n- 100g sliced bell peppers\n- 150g broccoli\n- 50g sliced carrots\n- 1 tablespoon soy sauce\nCooking Instructions: \n1. Cut chicken breast into cubes and cook until browned. \n2. Add the Thai green curry paste and stir well. \n3. Add coconut milk and bring to a simmer.  \n4. Add bell peppers, broccoli and carrots and cook until tender. \n5. Stir in the soy sauce. \n6. Divide the curry between plates and serve."
+	],
+	"ingredients": [
+		{
+			"genericName": "brown rice",
+			"totalQuantity": "200g",
+			"mealsUsedIn": ["Spicy Korean Bibimbap"]
+		},
+		{
+			"genericName": "tofu",
+			"totalQuantity": "200g",
+			"mealsUsedIn": ["Spicy Korean Bibimbap"]
+		},
+		{
+			"genericName": "spinach",
+			"totalQuantity": "150g",
+			"mealsUsedIn": ["Spicy Korean Bibimbap"]
+		},
+		{
+			"genericName": "carrots",
+			"totalQuantity": "150g",
+			"mealsUsedIn": ["Spicy Korean Bibimbap", "Quick Thai Green Chicken Curry"]
+		},
+		{
+			"genericName": "bean sprouts",
+			"totalQuantity": "100g",
+			"mealsUsedIn": ["Spicy Korean Bibimbap"]
+		},
+		{
+			"genericName": "egg",
+			"totalQuantity": "1",
+			"mealsUsedIn": ["Spicy Korean Bibimbap"]
+		},
+		{
+			"genericName": "gochujang",
+			"totalQuantity": "2 tablespoons",
+			"mealsUsedIn": ["Spicy Korean Bibimbap"]
+		},
+		{
+			"genericName": "sesame oil",
+			"totalQuantity": "1 tablespoon",
+			"mealsUsedIn": ["Spicy Korean Bibimbap"]
+		},
+		{
+			"genericName": "chicken breast",
+			"totalQuantity": "250g",
+			"mealsUsedIn": ["Quick Thai Green Chicken Curry"]
+		},
+		{
+			"genericName": "Green Thai curry paste",
+			"totalQuantity": "150g",
+			"mealsUsedIn": ["Quick Thai Green Chicken Curry"]
+		},
+		{
+			"genericName": "coconut milk",
+			"totalQuantity": "400ml",
+			"mealsUsedIn": ["Quick Thai Green Chicken Curry"]
+		},
+		{
+			"genericName": "bell peppers",
+			"totalQuantity": "100g",
+			"mealsUsedIn": ["Quick Thai Green Chicken Curry"]
+		},
+		{
+			"genericName": "broccoli",
+			"totalQuantity": "150g",
+			"mealsUsedIn": ["Quick Thai Green Chicken Curry"]
+		},
+		{
+			"genericName": "soy sauce",
+			"totalQuantity": "1 tablespoon",
+			"mealsUsedIn": ["Quick Thai Green Chicken Curry"]
+		}
+	]
+}

@@ -43,6 +43,8 @@ export abstract class Grocer {
 
   abstract login(): Promise<Either<LoginFail, typeof LOGIN_SUCCESS>>;
 
+  abstract openLoginPage(): Promise<void>;
+
   abstract addToCart(args: {
     itemUrl: string;
     quantity: number;
