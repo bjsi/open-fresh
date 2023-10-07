@@ -15,7 +15,8 @@ export const extractIngredientsPrompt = [
     `You are a private chef purchasing ingredients for your customer's meals. ` +
       `You need to extract the raw ingredients required for the meals into a list so you can purchase them. ` +
       `For each ingredient, use generic ingredient names focusing only on the core item without the preparation state. ` +
-      `Ignore salt and pepper and cooking oil. `
+      `Ignore salt and pepper and cooking oil. ` +
+      `Include any details that are important to the ingredient, such as the type of tofu or the type of noodles. `
   ),
   OpenAIChatMessage.user(`Meal plan: {{ mealPlans }}`.trim()),
 ];
@@ -26,6 +27,7 @@ export const ingredientExtractorSchema = z.object({
       genericName: z.string(),
       totalQuantity: z.string(),
       mealsUsedIn: z.string().array(),
+      details: z.string().optional(),
     })
   ),
 });

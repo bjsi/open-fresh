@@ -12,19 +12,23 @@ import { compilePrompt } from "./compilePrompt";
 
 export const pickProductPrompt = [
   OpenAIChatMessage.system(
-    `You are a private chef purchasing ingredients for your customer's meals. ` +
-      `You are shown a list of products for a given ingredient and you must pick the best one, taking into account the following things:\n` +
-      `- Try to match the quantity of ingredient required to minimize waste.\n` +
-      `- Try to pick the highest quality products for the customer's budget.\n` +
+    `You are a personal chef purchasing ingredients for a customer's meals. ` +
+      `You are shown a list of products for a given ingredient and you must pick the best one to add to your cart. ` +
+      `You must match the quantity of ingredient required to minimize waste. ` +
+      `Assume that any left over ingredients will be thrown out. ` +
+      `Higher quality products are preferable, but should not be chosen if they are too expensive for the customer's budget. ` +
       `Give a couple of sentences of reasoning for your choice.`
   ),
   OpenAIChatMessage.user(
     `
-Ingredient: {{ ingredient }}
+Ingredient:
+{{ ingredient }}
 
-Customer context: {{ customerContext }}
+Customer context:
+{{ customerContext }}
 
-Quantity: {{ quantity }}
+Quantity:
+{{ quantity }}
 
 Product search results:
 {{ productSearchResults }}
@@ -53,7 +57,6 @@ const pickProductStructure = {
 type PickProductVars = {
   ingredient: string;
   customerContext: string;
-  quantity: string;
   productSearchResults: string;
 };
 
@@ -68,9 +71,7 @@ export async function pickProduct(
   stream: false
 ): Promise<z.infer<typeof pickProductSchema>>;
 export async function pickProduct(vars: PickProductVars, stream: boolean) {
-  console.log(
-    `Picking the best product for ${vars.ingredient} (${vars.quantity})...`
-  );
+  console.log(`Picking the best product for ${vars.ingredient}...`);
   const model = new OpenAIChatModel({
     model: "gpt-4",
   });

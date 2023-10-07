@@ -96,9 +96,8 @@ const addAllIngredientsToCart = async (args: {
 
     const choice = await pickProduct(
       {
-        ingredient: ingredient.genericName,
+        ingredient: JSON.stringify(ingredient, null, 2),
         customerContext: args.requirements,
-        quantity: ingredient.totalQuantity,
         productSearchResults: JSON.stringify(
           products.data.slice(0, 10),
           null,
