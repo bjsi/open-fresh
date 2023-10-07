@@ -83,7 +83,6 @@ const addAllIngredientsToCart = async (args: {
   );
   const grocer = new Sainsburys(driver);
 
-  await grocer.openLoginPage();
   const loginRes = await grocer.login();
 
   for (const ingredient of args.ingredients) {

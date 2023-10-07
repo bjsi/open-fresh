@@ -139,25 +139,10 @@ export class Sainsburys extends Grocer {
     }
 
     try {
-      let searchInputFinder = (
-        await this.driver.findElements(
-          By.css('[data-test-id="search-bar-input"]')
-        )
-      )[0]
-        ? By.css('[data-test-id="search-bar-input"]')
-        : By.id("search");
-      // Find the search input element by its ID and wait for it to be visible and enabled.
-      await this.driver.wait(until.elementLocated(searchInputFinder), 5000);
-      let searchInput = await this.driver.findElement(searchInputFinder);
-      await this.driver.wait(until.elementIsVisible(searchInput), 5000);
-      await this.driver.wait(until.elementIsEnabled(searchInput), 5000);
-
-      // Type the search query into the search input field.
-      await searchInput.sendKeys(args.query);
-
-      // Find the search button by its ID and click it.
-      let searchButton = await this.driver.findElement(By.id("searchSubmit"));
-      await searchButton.submit();
+      await this.driver.get(
+        "https://www.sainsburys.co.uk/gol-ui/SearchResults/" +
+          encodeURIComponent(args.query)
+      );
       await this.acceptCookies();
       await this.driver.wait(
         until.elementLocated(By.css(".pt__content")),
@@ -203,6 +188,28 @@ export class Sainsburys extends Grocer {
     return productInfo;
   }
 
+  async clearCart() {
+    await this.driver.get("https://www.sainsburys.co.uk/gol-ui/trolley");
+    await this.driver.wait(
+      until.elementLocated(
+        By.css('[data-test-id="open-modal-empty-trolley-button"]')
+      ),
+      5000
+    );
+    const emptyBtn = await this.driver.findElement(
+      By.css('[data-test-id="open-modal-empty-trolley-button"]')
+    );
+    await emptyBtn.click();
+    await this.driver.wait(
+      until.elementLocated(By.css('[data-test-id="modal-primary-button"]')),
+      5000
+    );
+    const confirmBtn = await this.driver.findElement(
+      By.css('[data-test-id="modal-primary-button"]')
+    );
+    await confirmBtn.click();
+  }
+
   async acceptCookies() {
     try {
       // Check if the cookie banner is displayed and accept cookies
@@ -235,9 +242,7 @@ export class Sainsburys extends Grocer {
       const addBtnCss = '[data-test-id="add-button"]';
       const addToCartBtn = await productElemnt.findElement(By.css(addBtnCss));
       await addToCartBtn.click();
-      if (await this.onLoginPage()) {
-        await this.login();
-      }
+
       const addQuantityButton = await productElemnt.findElement(
         By.css('[data-test-id="pt-button-inc"]')
       );
@@ -250,23 +255,22 @@ export class Sainsburys extends Grocer {
     }
   }
 
-  async openLoginPage() {
-    await this.driver.get("https://account.sainsburys.co.uk/gol/login");
-  }
-
-  async onLoginPage() {
-    try {
-      await this.driver.wait(
-        until.elementLocated(By.css('[data-testid="username"]')),
-        5000
-      );
-      return true;
-    } catch {
-      return false;
-    }
+  async openHomePage() {
+    await this.driver.get("https://www.sainsburys.co.uk/");
   }
 
   async login() {
+    await this.openHomePage();
+    await this.acceptCookies();
+    const login = await this.driver.findElement(
+      By.css('[data-id="loginForm"]')
+    );
+    await login.click();
+    const groceryLogin = await this.driver.findElement(
+      By.css('[data-testid="account-links-list-item-link"]')
+    );
+    await groceryLogin.click();
+
     console.log("Logging in...");
     const email = process.env.SAINSBURYS_EMAIL;
     const password = process.env.SAINSBURYS_PASSWORD;
@@ -293,22 +297,15 @@ export class Sainsburys extends Grocer {
       let passwordField = await this.driver.findElement(
         By.css('[data-testid="password"]')
       );
-      await passwordField.sendKeys(password);
-
-      let loginButton = await this.driver.findElement(
-        By.css('[data-testid="log-in"]')
-      );
-      await this.driver.wait(until.elementIsVisible(loginButton), 5000);
-      await this.driver.wait(until.elementIsEnabled(loginButton), 5000);
-      await this.driver.sleep(5000);
-      await loginButton.click();
-
+      await passwordField.sendKeys(password, Key.RETURN);
       // TODO: check for code screen ("We've sent you a code")
       // could probably get around this by using users chrome user data dir
       // TODO: try again screen - just need to click the button
 
       await this.acceptCookies();
       console.log("Logged in.");
+
+      // await this.clearCart();
     } catch (e) {
       return fail(LoginFail.SeleniumError);
     }
