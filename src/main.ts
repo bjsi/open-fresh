@@ -1,17 +1,15 @@
 import { Builder } from "selenium-webdriver";
-import { Sainsburys } from "./grocers/sainsburys";
+import { Sainsburys, formatProduct } from "./grocers/sainsburys";
 import dotenv from "dotenv";
 import {
   Ingredient,
   extractIngredients,
+  formatIngredient,
   ingredientExtractorSchema,
 } from "./ai/prompts/extractIngredients";
 import { pickProduct } from "./ai/prompts/pickProduct";
 import * as R from "remeda";
-import {
-  createMealPlan,
-  createMealPlanSchema,
-} from "./ai/prompts/createMealPlan";
+import { Recipe, createMealPlan } from "./ai/prompts/createMealPlan";
 import { createDriverProxy } from "./selenium/driver";
 import { program } from "commander";
 import fs from "fs";
@@ -30,17 +28,11 @@ const createAndLogMealPlan = async (requirements: string) => {
   );
   for await (const fragment of mealPlanStream) {
     if (fragment.isComplete) {
-      if (fragment.value.mealRecipes.length > 0) {
-        console.log(R.last(fragment.value.mealRecipes));
-      }
-      return fragment.value.mealRecipes;
+      return fragment.value.recipes;
     } else {
-      const parsed = createMealPlanSchema.safeParse(fragment.value);
-      if (parsed.success) {
-        console.clear();
-        console.log("Creating meal plan...");
-        console.log(parsed.data.mealRecipes.join("\n\n"));
-      }
+      console.clear();
+      console.log("Creating meal plan...");
+      console.log(JSON.stringify(fragment.value, null, 2));
     }
   }
   console.log("Done.");
@@ -96,18 +88,16 @@ const addAllIngredientsToCart = async (args: {
 
     const choice = await pickProduct(
       {
-        ingredient: JSON.stringify(ingredient, null, 2),
+        ingredient: formatIngredient(ingredient),
         customerContext: args.requirements,
-        productSearchResults: JSON.stringify(
-          products.data.slice(0, 10),
-          null,
-          2
-        ),
+        productSearchResults: products.data.map(formatProduct).join("\n\n"),
       },
       false
     );
 
     console.log(JSON.stringify(choice, null, 2));
+
+    // TODO: handle not finding the right product
 
     const res = await grocer.addToCart({
       itemUrl:
@@ -193,7 +183,7 @@ program
       "utf-8"
     );
     const json = JSON.parse(mealPlanData) as {
-      meals: string[];
+      meals: Recipe[];
       requirements: string;
       ingredients?: Ingredient[];
     };
@@ -206,7 +196,23 @@ program
       ingredients = json.ingredients;
     } else {
       // Ingredients need to be extracted
-      ingredients = await extractAndLogIngredients({ meals: json.meals });
+      ingredients = await extractAndLogIngredients({
+        meals: json.meals.map((meal) => {
+          return `
+Day: ${meal.day}
+Meal type: ${meal.mealType}
+Name: ${meal.name}
+Ingredients:
+${meal.ingredients
+  .map((ingredient) => {
+    return `- ${ingredient.name} (${ingredient.grams}g)`;
+  })
+  .join("\n")}
+Instructions:
+${meal.instructions}
+`.trim();
+        }),
+      });
     }
 
     await addAllIngredientsToCart({

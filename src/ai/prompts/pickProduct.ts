@@ -13,10 +13,10 @@ import { compilePrompt } from "./compilePrompt";
 export const pickProductPrompt = [
   OpenAIChatMessage.system(
     `You are a personal chef purchasing ingredients for a customer's meals. ` +
-      `You are shown a list of products for a given ingredient and you must pick the best one to add to your cart. ` +
       `You must match the quantity of ingredient required to minimize waste. ` +
       `Assume that any left over ingredients will be thrown out. ` +
       `Higher quality products are preferable, but should not be chosen if they are too expensive for the customer's budget. ` +
+      `You should also consider the contexts in which the ingredient will be used. ` +
       `Give a couple of sentences of reasoning for your choice.`
   ),
   OpenAIChatMessage.user(

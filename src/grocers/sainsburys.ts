@@ -131,12 +131,17 @@ function getUrlFromProduct(element: WebElement) {
     .then((url) => url);
 }
 
+export const formatProduct = (product: ProductSearchResult) => {
+  return `
+Name: ${product.name}
+Price: ${product.price}
+Rating: ${product.rating} 
+`.trim();
+};
+
 export class Sainsburys extends Grocer {
   async search(args: { query: string; test?: boolean }) {
     console.log(`Searching for ${args.query}...`);
-    if (args.test) {
-      return success(exampleProductData);
-    }
 
     try {
       await this.driver.get(
@@ -144,14 +149,16 @@ export class Sainsburys extends Grocer {
           encodeURIComponent(args.query)
       );
       await this.acceptCookies();
-      await this.driver.wait(
-        until.elementLocated(By.css(".pt__content")),
+      const resultsContainer = await this.driver.wait(
+        until.elementLocated(By.css(".ln-o-grid .ln-o-grid--matrix")),
         5000
       );
-      const elements = await this.driver.findElements(By.css(".pt__content"));
+      const elements = await resultsContainer.findElements(
+        By.css(".pt__content")
+      );
       const products = await Promise.all(elements.map(this.extractProductInfo));
       console.log(`Found ${products.length} products: `);
-      console.log(JSON.stringify(products.slice(0, 5), null, 2));
+      console.log(products.map(formatProduct).join("\n\n"));
       return success(products);
     } catch (e) {
       console.log("Error searching.", e);

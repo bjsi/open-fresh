@@ -14,9 +14,9 @@ export const extractIngredientsPrompt = [
   OpenAIChatMessage.system(
     `You are a private chef purchasing ingredients for your customer's meals. ` +
       `You need to extract the raw ingredients required for the meals into a list so you can purchase them. ` +
-      `For each ingredient, use generic ingredient names focusing only on the core item without the preparation state. ` +
+      `For each ingredient, include the generic ingredient name focusing only on the core item without the preparation state. ` +
       `Ignore salt and pepper and cooking oil. ` +
-      `Include any details that are important to the ingredient, such as the type of tofu or the type of noodles. `
+      `Include details about how the ingredient will be used, as this will help you to choose the right product. `
   ),
   OpenAIChatMessage.user(`Meal plan: {{ mealPlans }}`.trim()),
 ];
@@ -24,13 +24,22 @@ export const extractIngredientsPrompt = [
 export const ingredientExtractorSchema = z.object({
   ingredients: z.array(
     z.object({
+      name: z.string(),
       genericName: z.string(),
       totalQuantity: z.string(),
-      mealsUsedIn: z.string().array(),
-      details: z.string().optional(),
+      usedFor: z.string().array(),
     })
   ),
 });
+
+export const formatIngredient = (ingredient: Ingredient) => {
+  return `
+Name: ${ingredient.name}
+Generic Name: ${ingredient.genericName}
+Total Quantity: ${ingredient.totalQuantity}
+Used For: ${ingredient.usedFor.join(", ")}
+`.trim();
+};
 
 type IngredientExtractor = z.infer<typeof ingredientExtractorSchema>;
 
@@ -85,87 +94,3 @@ export async function extractIngredients(
     );
   }
 }
-
-export const exampleIngredients = [
-  {
-    genericName: "Extra Firm Tofu",
-    totalQuantity: "200g",
-    mealsUsedIn: ["Tofu Scramble Sandwich"],
-  },
-  {
-    genericName: "Bread",
-    totalQuantity: "100g",
-    mealsUsedIn: ["Tofu Scramble Sandwich"],
-  },
-  {
-    genericName: "Nutritional Yeast",
-    totalQuantity: "20g",
-    mealsUsedIn: ["Tofu Scramble Sandwich"],
-  },
-  {
-    genericName: "Turmeric",
-    totalQuantity: "5g",
-    mealsUsedIn: ["Tofu Scramble Sandwich"],
-  },
-  {
-    genericName: "Oil",
-    totalQuantity: "10g",
-    mealsUsedIn: [
-      "Tofu Scramble Sandwich",
-      "Spicy Chinese Szechuan Noodles with Chicken",
-    ],
-  },
-  {
-    genericName: "Pickles",
-    totalQuantity: "50g",
-    mealsUsedIn: ["Tofu Scramble Sandwich"],
-  },
-  {
-    genericName: "Spinach",
-    totalQuantity: "100g",
-    mealsUsedIn: [
-      "Tofu Scramble Sandwich",
-      "Spicy Chinese Szechuan Noodles with Chicken",
-    ],
-  },
-  {
-    genericName: "Chinese Noodles",
-    totalQuantity: "100g",
-    mealsUsedIn: ["Spicy Chinese Szechuan Noodles with Chicken"],
-  },
-  {
-    genericName: "Chicken Breast",
-    totalQuantity: "200g",
-    mealsUsedIn: ["Spicy Chinese Szechuan Noodles with Chicken"],
-  },
-  {
-    genericName: "Ginger",
-    totalQuantity: "10g",
-    mealsUsedIn: ["Spicy Chinese Szechuan Noodles with Chicken"],
-  },
-  {
-    genericName: "Garlic",
-    totalQuantity: "10g",
-    mealsUsedIn: ["Spicy Chinese Szechuan Noodles with Chicken"],
-  },
-  {
-    genericName: "Szechuan Peppercorns",
-    totalQuantity: "5g",
-    mealsUsedIn: ["Spicy Chinese Szechuan Noodles with Chicken"],
-  },
-  {
-    genericName: "Soy Sauce",
-    totalQuantity: "20ml",
-    mealsUsedIn: ["Spicy Chinese Szechuan Noodles with Chicken"],
-  },
-  {
-    genericName: "Sesame Seeds",
-    totalQuantity: "5g",
-    mealsUsedIn: ["Spicy Chinese Szechuan Noodles with Chicken"],
-  },
-  {
-    genericName: "Red Chilis",
-    totalQuantity: "10g",
-    mealsUsedIn: ["Spicy Chinese Szechuan Noodles with Chicken"],
-  },
-];
