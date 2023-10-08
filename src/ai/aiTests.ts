@@ -7,7 +7,7 @@ import {
   pickProductPrompt,
   pickProductSchema,
 } from "./prompts/pickProduct";
-import { exampleProductData } from "../grocers/sainsburys";
+import { exampleProductData, formatProduct } from "../grocers/sainsburys";
 import {
   extractIngredientsFunction,
   extractIngredientsPrompt,
@@ -16,8 +16,23 @@ import {
 import {
   createMealPlanFunction,
   createMealPlanSchema,
+  formatMeal,
   mealPlanPrompt,
+  recipeSchema,
 } from "./prompts/createMealPlan";
+import {
+  SuggestReplacementIngredientsVars,
+  formatReplacementIngredientsAsFeedback,
+  suggestReplacementIngredient,
+  suggestReplacementIngredientsFunction,
+  suggestReplacementIngredientsPrompt,
+  suggestReplacementIngredientsSchema,
+} from "./prompts/suggestReplacementIngredients";
+import {
+  UpdateRecipeVars,
+  updateRecipeFunction,
+  updateRecipePrompt,
+} from "./prompts/updateRecipe";
 
 dotenv.config();
 
@@ -73,6 +88,89 @@ const assertValidSchema = (schema: z.ZodSchema<any>) => {
 // 7. what meals per day (eg. breakfast, snack, lunch, snack, dinner)
 
 const promptTests: Record<string, EvaluateTestSuite> = {
+  "replace-ingredient": {
+    ...testOptions({
+      prompt: suggestReplacementIngredientsPrompt,
+      functions: [suggestReplacementIngredientsFunction],
+    }),
+    tests: [
+      {
+        vars: {
+          ingredient: "enchilada sauce",
+          quantity: "1 cup",
+          mealsUsedIn: "chicken enchiladas",
+          customerContext: "I'm making chicken enchiladas for dinner.",
+        } satisfies SuggestReplacementIngredientsVars,
+        assert: [assertValidSchema(suggestReplacementIngredientsSchema)],
+      },
+    ],
+  },
+  "update-recipe": {
+    ...testOptions({
+      prompt: updateRecipePrompt,
+      functions: [updateRecipeFunction],
+    }),
+    tests: [
+      {
+        vars: {
+          mealPlan: formatMeal({
+            name: "Gluten Free Enchiladas",
+            ingredients: [
+              {
+                name: "Gluten Free Corn Tortillas",
+                grams: "200",
+              },
+              {
+                name: "Red Enchilada Sauce",
+                grams: "400",
+              },
+              {
+                name: "Chicken Breast",
+                grams: "400",
+              },
+              {
+                name: "Black Beans",
+                grams: "200",
+              },
+              {
+                name: "Cheese",
+                grams: "200",
+              },
+            ],
+            instructions:
+              "Preheat oven to 375 degrees. Cook chicken until no longer pink. Fill tortillas with chicken and black beans, roll up and place in baking dish. Cover with enchilada sauce and cheese. Bake for 20 minutes or until cheese is bubbly.",
+            mealType: "Dinner",
+            day: "Monday",
+          }),
+          feedback: formatReplacementIngredientsAsFeedback("enchilada sauce", {
+            reasoning:
+              "Enchilada sauce is a key ingredient in chicken enchiladas, providing the dish with its characteristic flavor. If it's not available, a combination of tomato sauce, chili powder, and garlic powder can be used as a substitute. These ingredients together mimic the tangy, spicy, and slightly sweet flavor of enchilada sauce.",
+            replacementIngredients: [
+              {
+                name: "tomato sauce",
+                genericName: "tomato sauce",
+                totalQuantity: "1 cup",
+                mealsUsedIn: ["chicken enchiladas"],
+              },
+              {
+                name: "chili powder",
+                genericName: "chili powder",
+                totalQuantity: "2 teaspoons",
+                mealsUsedIn: ["chicken enchiladas"],
+              },
+              {
+                name: "garlic powder",
+                genericName: "garlic powder",
+                totalQuantity: "1 teaspoon",
+                mealsUsedIn: ["chicken enchiladas"],
+              },
+            ],
+          }),
+        } satisfies UpdateRecipeVars,
+        assert: [assertValidSchema(recipeSchema)],
+      },
+    ],
+  },
   "meal-plan": {
     ...testOptions({
       prompt: mealPlanPrompt,
@@ -100,7 +198,9 @@ const promptTests: Record<string, EvaluateTestSuite> = {
       {
         vars: {
           ingredient: "firm tofu",
-          productSearchResults: JSON.stringify(exampleProductData.slice(0, 10)),
+          productSearchResults: JSON.stringify(
+            exampleProductData.map(formatProduct).slice(0, 10)
+          ),
           quantity: "1kg",
           customerContext:
             `Create a lunch and dinner plan for me. ` +

@@ -25,23 +25,24 @@ type CreateMealPlanVars = {
 };
 
 type MealPlan = z.infer<typeof createMealPlanSchema>;
-export type Recipe = z.infer<typeof createMealPlanSchema>["recipes"][0];
 
-export const createMealPlanSchema = z.object({
-  recipes: z
+export const recipeSchema = z.object({
+  name: z.string(),
+  ingredients: z
     .object({
       name: z.string(),
-      ingredients: z
-        .object({
-          name: z.string(),
-          grams: z.string(),
-        })
-        .array(),
-      instructions: z.string(),
-      mealType: z.string(),
-      day: z.string(),
+      grams: z.string(),
     })
     .array(),
+  instructions: z.string(),
+  mealType: z.string(),
+  day: z.string(),
+});
+
+export type Recipe = z.infer<typeof recipeSchema>;
+
+export const createMealPlanSchema = z.object({
+  recipes: recipeSchema.array(),
 });
 
 export const createMealPlanFunction = {
@@ -55,6 +56,22 @@ const createMealPlanStructure = {
   schema: new ZodSchema(createMealPlanSchema),
   description: createMealPlanFunction.description,
 };
+
+export function formatMeal(meal: Recipe): string {
+  return `
+Day: ${meal.day}
+Meal type: ${meal.mealType}
+Name: ${meal.name}
+Ingredients:
+${meal.ingredients
+  .map((ingredient) => {
+    return `- ${ingredient.name} (${ingredient.grams}g)`;
+  })
+  .join("\n")}
+Instructions:
+${meal.instructions}
+`.trim();
+}
 
 export async function createMealPlan(
   vars: CreateMealPlanVars,

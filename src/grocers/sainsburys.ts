@@ -171,7 +171,10 @@ export class Sainsburys extends Grocer {
     const productNameElement = await element.findElement(
       By.css('[data-test-id="product-tile-description"]')
     );
-    const name = await productNameElement.getText();
+    const productLinkElement = await productNameElement.findElement(
+      By.css("a")
+    );
+    const name = await productLinkElement.getAttribute("title");
     const url = await getUrlFromProduct(element);
 
     // Find the element containing the product price

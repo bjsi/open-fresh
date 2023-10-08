@@ -9,7 +9,11 @@ import {
 } from "./ai/prompts/extractIngredients";
 import { pickProduct } from "./ai/prompts/pickProduct";
 import * as R from "remeda";
-import { Recipe, createMealPlan } from "./ai/prompts/createMealPlan";
+import {
+  Recipe,
+  createMealPlan,
+  formatMeal,
+} from "./ai/prompts/createMealPlan";
 import { createDriverProxy } from "./selenium/driver";
 import { program } from "commander";
 import fs from "fs";
@@ -76,6 +80,7 @@ const addAllIngredientsToCart = async (args: {
   const grocer = new Sainsburys(driver);
 
   const loginRes = await grocer.login();
+  await grocer.clearCart();
 
   for (const ingredient of args.ingredients) {
     const products = await grocer.search({
@@ -197,21 +202,7 @@ program
     } else {
       // Ingredients need to be extracted
       ingredients = await extractAndLogIngredients({
-        meals: json.meals.map((meal) => {
-          return `
-Day: ${meal.day}
-Meal type: ${meal.mealType}
-Name: ${meal.name}
-Ingredients:
-${meal.ingredients
-  .map((ingredient) => {
-    return `- ${ingredient.name} (${ingredient.grams}g)`;
-  })
-  .join("\n")}
-Instructions:
-${meal.instructions}
-`.trim();
-        }),
+        meals: json.meals.map(formatMeal),
       });
     }
 

@@ -21,15 +21,15 @@ export const extractIngredientsPrompt = [
   OpenAIChatMessage.user(`Meal plan: {{ mealPlans }}`.trim()),
 ];
 
+export const ingredientSchema = z.object({
+  name: z.string(),
+  genericName: z.string(),
+  totalQuantity: z.string(),
+  mealsUsedIn: z.string().array(),
+});
+
 export const ingredientExtractorSchema = z.object({
-  ingredients: z.array(
-    z.object({
-      name: z.string(),
-      genericName: z.string(),
-      totalQuantity: z.string(),
-      usedFor: z.string().array(),
-    })
-  ),
+  ingredients: z.array(ingredientSchema),
 });
 
 export const formatIngredient = (ingredient: Ingredient) => {
@@ -37,7 +37,7 @@ export const formatIngredient = (ingredient: Ingredient) => {
 Name: ${ingredient.name}
 Generic Name: ${ingredient.genericName}
 Total Quantity: ${ingredient.totalQuantity}
-Used For: ${ingredient.usedFor.join(", ")}
+Meals Used In: ${ingredient.mealsUsedIn.join(", ")}
 `.trim();
 };
 
