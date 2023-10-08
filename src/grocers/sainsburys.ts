@@ -150,7 +150,7 @@ export class Sainsburys extends Grocer {
       );
       await this.acceptCookies();
       const resultsContainer = await this.driver.wait(
-        until.elementLocated(By.css(".ln-o-grid .ln-o-grid--matrix")),
+        until.elementLocated(By.css(".ln-o-grid.ln-o-grid--matrix")),
         5000
       );
       const elements = await resultsContainer.findElements(
