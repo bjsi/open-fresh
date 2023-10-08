@@ -279,6 +279,10 @@ program
       ingredients = await extractAndLogIngredients({
         meals: mealPlanData.meals.map(formatMeal),
       });
+      writeMealPlanFile(mealPlanFile, {
+        ...mealPlanData,
+        ingredients,
+      });
     }
 
     await addAllIngredientsToCart({
