@@ -1,5 +1,4 @@
 {
-  "requirements": "Can you plan a mexican dinner evening for 2 people.\nI want to make fajitas and enchiladas.\nI also want to make homemade frozen margharitas.\nAll of the ingredients must be gluten free.",
   "meals": [
     {
       "name": "Gluten Free Chicken Fajitas",
@@ -84,6 +83,114 @@
       "instructions": "Blend tequila, lime juice, agave syrup and ice until smooth. Taste and adjust sweetness if desired. Serve in salt-rimmed glasses.",
       "mealType": "Drink",
       "day": "Monday"
+    }
+  ],
+  "requirements": "Can you plan a mexican dinner evening for 2 people.\nI want to make fajitas and enchiladas.\nI also want to make homemade frozen margharitas.\nAll of the ingredients must be gluten free.",
+  "ingredients": [
+    {
+      "name": "Chicken Breast",
+      "genericName": "Chicken",
+      "totalQuantity": "800g",
+      "mealsUsedIn": [
+        "Gluten Free Chicken Fajitas",
+        "Gluten Free Enchiladas"
+      ]
+    },
+    {
+      "name": "Gluten Free Fajita Seasoning",
+      "genericName": "Fajita Seasoning",
+      "totalQuantity": "50g",
+      "mealsUsedIn": [
+        "Gluten Free Chicken Fajitas"
+      ]
+    },
+    {
+      "name": "Corn Tortillas",
+      "genericName": "Tortillas",
+      "totalQuantity": "200g",
+      "mealsUsedIn": [
+        "Gluten Free Chicken Fajitas"
+      ]
+    },
+    {
+      "name": "Onion",
+      "genericName": "Onion",
+      "totalQuantity": "100g",
+      "mealsUsedIn": [
+        "Gluten Free Chicken Fajitas"
+      ]
+    },
+    {
+      "name": "Bell Peppers",
+      "genericName": "Bell Peppers",
+      "totalQuantity": "200g",
+      "mealsUsedIn": [
+        "Gluten Free Chicken Fajitas"
+      ]
+    },
+    {
+      "name": "Gluten Free Corn Tortillas",
+      "genericName": "Corn Tortillas",
+      "totalQuantity": "200g",
+      "mealsUsedIn": [
+        "Gluten Free Enchiladas"
+      ]
+    },
+    {
+      "name": "Red Enchilada Sauce",
+      "genericName": "Enchilada Sauce",
+      "totalQuantity": "400g",
+      "mealsUsedIn": [
+        "Gluten Free Enchiladas"
+      ]
+    },
+    {
+      "name": "Black Beans",
+      "genericName": "Black Beans",
+      "totalQuantity": "200g",
+      "mealsUsedIn": [
+        "Gluten Free Enchiladas"
+      ]
+    },
+    {
+      "name": "Cheese",
+      "genericName": "Cheese",
+      "totalQuantity": "200g",
+      "mealsUsedIn": [
+        "Gluten Free Enchiladas"
+      ]
+    },
+    {
+      "name": "Tequila",
+      "genericName": "Tequila",
+      "totalQuantity": "100g",
+      "mealsUsedIn": [
+        "Homemade Frozen Margaritas"
+      ]
+    },
+    {
+      "name": "Lime Juice",
+      "genericName": "Lime Juice",
+      "totalQuantity": "50g",
+      "mealsUsedIn": [
+        "Homemade Frozen Margaritas"
+      ]
+    },
+    {
+      "name": "Agave Syrup",
+      "genericName": "Agave Syrup",
+      "totalQuantity": "20g",
+      "mealsUsedIn": [
+        "Homemade Frozen Margaritas"
+      ]
+    },
+    {
+      "name": "Ice",
+      "genericName": "Ice",
+      "totalQuantity": "200g",
+      "mealsUsedIn": [
+        "Homemade Frozen Margaritas"
+      ]
     }
   ]
 }
