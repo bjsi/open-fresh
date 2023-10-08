@@ -96,8 +96,9 @@ const promptTests: Record<string, EvaluateTestSuite> = {
     tests: [
       {
         vars: {
-          ingredient: "enchilada sauce",
-          quantity: "1 cup",
+          name: "enchilada sauce",
+          genericName: "enchilada sauce",
+          totalQuantity: "1 cup",
           mealsUsedIn: "chicken enchiladas",
           customerContext: "I'm making chicken enchiladas for dinner.",
         } satisfies SuggestReplacementIngredientsVars,

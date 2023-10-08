@@ -6,19 +6,22 @@ import {
   extractIngredients,
   formatIngredient,
   ingredientExtractorSchema,
+  ingredientSchema,
 } from "./ai/prompts/extractIngredients";
 import { pickProduct } from "./ai/prompts/pickProduct";
 import * as R from "remeda";
 import {
-  Recipe,
   createMealPlan,
   formatMeal,
+  recipeSchema,
 } from "./ai/prompts/createMealPlan";
 import { createDriverProxy } from "./selenium/driver";
 import { program } from "commander";
 import fs from "fs";
 import path from "path";
 import inquirer from "inquirer";
+import { z } from "zod";
+import { suggestReplacementIngredient } from "./ai/prompts/suggestReplacementIngredients";
 
 dotenv.config();
 
@@ -71,6 +74,8 @@ const extractAndLogIngredients = async (args: { meals: string[] }) => {
 };
 
 const addAllIngredientsToCart = async (args: {
+  mealPlanData: MealPlanFileData;
+  mealPlanFile: string;
   requirements: string;
   ingredients: Ingredient[];
 }) => {
@@ -102,11 +107,49 @@ const addAllIngredientsToCart = async (args: {
 
     console.log(JSON.stringify(choice, null, 2));
 
-    // TODO: handle not finding the right product
+    const itemUrl =
+      products.data.find((p) => p.name === choice.productName)?.url ?? "";
+    if (!choice || !choice.productName || !itemUrl) {
+      console.log(
+        `${ingredient.name} is not available. Finding replacements...`
+      );
+      const replacementIngredients = await suggestReplacementIngredient(
+        {
+          ...ingredient,
+          mealsUsedIn: ingredient.mealsUsedIn.join(", "),
+          customerContext: args.requirements,
+        },
+        false
+      );
+
+      // splice in the replacement ingredients
+      const newIngredients = [...args.ingredients];
+      newIngredients.splice(
+        args.ingredients.findIndex((i) => i.name === ingredient.name),
+        1,
+        ...replacementIngredients.replacementIngredients
+      );
+
+      writeMealPlanFile(args.mealPlanFile, {
+        ...args.mealPlanData,
+        ingredients: newIngredients,
+      });
+
+      await addAllIngredientsToCart({
+        mealPlanData: {
+          ...args.mealPlanData,
+          ingredients: newIngredients,
+        },
+        mealPlanFile: args.mealPlanFile,
+        requirements: args.requirements,
+        ingredients: newIngredients,
+      });
+
+      return;
+    }
 
     const res = await grocer.addToCart({
-      itemUrl:
-        products.data.find((p) => p.name === choice.productName)?.url ?? "",
+      itemUrl,
       quantity: choice.numToAddToCart,
     });
 
@@ -179,36 +222,70 @@ program
     );
   });
 
+const mealPlanFileSchema = z.object({
+  meals: recipeSchema.array(),
+  requirements: z.string(),
+  ingredients: ingredientSchema.array().optional(),
+});
+
+type MealPlanFileData = z.infer<typeof mealPlanFileSchema>;
+
+function writeMealPlanFile(
+  fileName: string,
+  data: MealPlanFileData
+): MealPlanFileData {
+  fs.writeFileSync(
+    path.join(__dirname, fileName),
+    JSON.stringify(data, null, 2)
+  );
+  return data;
+}
+
+function readMealPlanFile(fileName: string): MealPlanFileData | undefined {
+  try {
+    const json = JSON.parse(
+      fs.readFileSync(path.join(__dirname, fileName), "utf-8")
+    );
+    const parsed = mealPlanFileSchema.safeParse(json);
+    if (!parsed.success) {
+      console.log(parsed.error);
+      return undefined;
+    } else {
+      return parsed.data;
+    }
+  } catch (e) {
+    console.log(e);
+    return undefined;
+  }
+}
+
 program
   .command("order-ingredients <mealPlanFile>")
   .description("Order ingredients based on a meal plan file")
   .action(async (mealPlanFile: string) => {
-    const mealPlanData = fs.readFileSync(
-      path.join(__dirname, mealPlanFile),
-      "utf-8"
-    );
-    const json = JSON.parse(mealPlanData) as {
-      meals: Recipe[];
-      requirements: string;
-      ingredients?: Ingredient[];
-    };
+    const mealPlanData = readMealPlanFile(mealPlanFile);
+    if (!mealPlanData) {
+      return;
+    }
 
     let ingredients: Ingredient[];
 
-    if (json.ingredients) {
+    if (mealPlanData.ingredients) {
       // Ingredients already exist in the JSON
-      console.log("Ingredients found in meal plan:", json.ingredients);
-      ingredients = json.ingredients;
+      console.log("Ingredients found in meal plan:", mealPlanData.ingredients);
+      ingredients = mealPlanData.ingredients;
     } else {
       // Ingredients need to be extracted
       ingredients = await extractAndLogIngredients({
-        meals: json.meals.map(formatMeal),
+        meals: mealPlanData.meals.map(formatMeal),
       });
     }
 
     await addAllIngredientsToCart({
+      mealPlanData,
+      mealPlanFile,
       ingredients,
-      requirements: json.requirements,
+      requirements: mealPlanData.requirements,
     });
   });
 

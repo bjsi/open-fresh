@@ -6,10 +6,7 @@ import {
   streamStructure,
 } from "modelfusion";
 import { z } from "zod";
-import {
-  extractIngredientsPrompt,
-  ingredientSchema,
-} from "./extractIngredients";
+import { Ingredient, ingredientSchema } from "./extractIngredients";
 import { compilePrompt } from "./compilePrompt";
 import { ZodSchema } from "./utils";
 import zodToJsonSchema from "zod-to-json-schema";
@@ -24,10 +21,10 @@ export const suggestReplacementIngredientsPrompt = [
   OpenAIChatMessage.user(
     `
 Desired Ingredient:
-{{ ingredient }}
+{{ name }}
 
 Desired Quantity:
-{{ quantity }}
+{{ totalQuantity }}
 
 Meals Used In:
 {{ mealsUsedIn }}
@@ -75,11 +72,9 @@ ${replacementIngredients
 };
 
 export type SuggestReplacementIngredientsVars = {
-  ingredient: string;
-  quantity: string;
-  mealsUsedIn: string;
   customerContext: string;
-};
+  mealsUsedIn: string;
+} & Omit<Ingredient, "mealsUsedIn">;
 
 export async function suggestReplacementIngredient(
   vars: SuggestReplacementIngredientsVars,
@@ -103,13 +98,13 @@ export async function suggestReplacementIngredient(
     return await generateStructure(
       model,
       suggestReplacementIngredientsStructure,
-      compilePrompt(extractIngredientsPrompt, vars)
+      compilePrompt(suggestReplacementIngredientsPrompt, vars)
     );
   } else {
     return await streamStructure(
       model,
       suggestReplacementIngredientsStructure,
-      compilePrompt(extractIngredientsPrompt, vars)
+      compilePrompt(suggestReplacementIngredientsPrompt, vars)
     );
   }
 }
