@@ -22,6 +22,7 @@ import path from "path";
 import inquirer from "inquirer";
 import { z } from "zod";
 import { suggestReplacementIngredient } from "./ai/prompts/suggestReplacementIngredients";
+import { Grocer } from "./grocers/grocer";
 
 dotenv.config();
 
@@ -74,21 +75,14 @@ const extractAndLogIngredients = async (args: { meals: string[] }) => {
 };
 
 const addAllIngredientsToCart = async (args: {
+  grocer: Grocer;
   mealPlanData: MealPlanFileData;
   mealPlanFile: string;
   requirements: string;
   ingredients: Ingredient[];
 }) => {
-  const driver = createDriverProxy(
-    await new Builder().forBrowser("chrome").build()
-  );
-  const grocer = new Sainsburys(driver);
-
-  const loginRes = await grocer.login();
-  await grocer.clearCart();
-
   for (const ingredient of args.ingredients) {
-    const products = await grocer.search({
+    const products = await args.grocer.search({
       query: ingredient.genericName,
     });
     if (products.type !== "success") {
@@ -135,7 +129,9 @@ const addAllIngredientsToCart = async (args: {
         ingredients: newIngredients,
       });
 
+      // TODO: this re-creates the browser driver etc.
       await addAllIngredientsToCart({
+        grocer: args.grocer,
         mealPlanData: {
           ...args.mealPlanData,
           ingredients: newIngredients,
@@ -148,7 +144,7 @@ const addAllIngredientsToCart = async (args: {
       return;
     }
 
-    const res = await grocer.addToCart({
+    const res = await args.grocer.addToCart({
       itemUrl,
       quantity: choice.numToAddToCart,
     });
@@ -285,7 +281,16 @@ program
       });
     }
 
+    const driver = createDriverProxy(
+      await new Builder().forBrowser("chrome").build()
+    );
+    const grocer = new Sainsburys(driver);
+
+    const loginRes = await grocer.login();
+    await grocer.clearCart();
+
     await addAllIngredientsToCart({
+      grocer,
       mealPlanData,
       mealPlanFile,
       ingredients,
