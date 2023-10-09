@@ -59,30 +59,6 @@
       "instructions": "Preheat oven to 375 degrees. Cook chicken until no longer pink. Fill tortillas with chicken and black beans, roll up and place in baking dish. Cover with enchilada sauce and cheese. Bake for 20 minutes or until cheese is bubbly.",
       "mealType": "Dinner",
       "day": "Monday"
-    },
-    {
-      "name": "Homemade Frozen Margaritas",
-      "ingredients": [
-        {
-          "name": "Tequila",
-          "grams": "100"
-        },
-        {
-          "name": "Lime Juice",
-          "grams": "50"
-        },
-        {
-          "name": "Agave Syrup",
-          "grams": "20"
-        },
-        {
-          "name": "Ice",
-          "grams": "200"
-        }
-      ],
-      "instructions": "Blend tequila, lime juice, agave syrup and ice until smooth. Taste and adjust sweetness if desired. Serve in salt-rimmed glasses.",
-      "mealType": "Drink",
-      "day": "Monday"
     }
   ],
   "requirements": "Can you plan a mexican dinner evening for 2 people.\nI want to make fajitas and enchiladas.\nI also want to make homemade frozen margharitas.\nAll of the ingredients must be gluten free.",
@@ -158,38 +134,6 @@
       "totalQuantity": "200g",
       "mealsUsedIn": [
         "Gluten Free Enchiladas"
-      ]
-    },
-    {
-      "name": "Tequila",
-      "genericName": "Tequila",
-      "totalQuantity": "100g",
-      "mealsUsedIn": [
-        "Homemade Frozen Margaritas"
-      ]
-    },
-    {
-      "name": "Lime Juice",
-      "genericName": "Lime Juice",
-      "totalQuantity": "50g",
-      "mealsUsedIn": [
-        "Homemade Frozen Margaritas"
-      ]
-    },
-    {
-      "name": "Agave Syrup",
-      "genericName": "Agave Syrup",
-      "totalQuantity": "20g",
-      "mealsUsedIn": [
-        "Homemade Frozen Margaritas"
-      ]
-    },
-    {
-      "name": "Ice",
-      "genericName": "Ice",
-      "totalQuantity": "200g",
-      "mealsUsedIn": [
-        "Homemade Frozen Margaritas"
       ]
     }
   ]
