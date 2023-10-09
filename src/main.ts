@@ -81,7 +81,8 @@ const addAllIngredientsToCart = async (args: {
   requirements: string;
   ingredients: Ingredient[];
 }) => {
-  for (const ingredient of args.ingredients) {
+  for (let i = 0; i < args.ingredients.length; i++) {
+    const ingredient = args.ingredients[i];
     const products = await args.grocer.search({
       query: ingredient.genericName,
     });
@@ -129,12 +130,12 @@ const addAllIngredientsToCart = async (args: {
         ingredients: newIngredients,
       });
 
-      // TODO: this re-creates the browser driver etc.
       await addAllIngredientsToCart({
         grocer: args.grocer,
         mealPlanData: {
           ...args.mealPlanData,
-          ingredients: newIngredients,
+          // only use the ingredients that haven't been added yet
+          ingredients: newIngredients.slice(i),
         },
         mealPlanFile: args.mealPlanFile,
         requirements: args.requirements,
