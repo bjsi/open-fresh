@@ -39,6 +39,7 @@ Product search results:
 export const pickProductSchema = z.object({
   reasoning: z.string(),
   productName: z.string(),
+  productId: z.number(),
   numToAddToCart: z.number(),
 });
 

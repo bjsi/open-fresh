@@ -103,7 +103,7 @@ const addAllIngredientsToCart = async (args: {
     console.log(JSON.stringify(choice, null, 2));
 
     const itemUrl =
-      products.data.find((p) => p.name === choice.productName)?.url ?? "";
+      products.data.find((p) => p.id === choice.productId)?.url ?? "";
     if (!choice || !choice.productName || !itemUrl) {
       console.log(
         `${ingredient.name} is not available. Finding replacements...`
@@ -139,7 +139,8 @@ const addAllIngredientsToCart = async (args: {
         },
         mealPlanFile: args.mealPlanFile,
         requirements: args.requirements,
-        ingredients: newIngredients,
+        // only use the ingredients that haven't been added yet
+        ingredients: newIngredients.slice(i),
       });
 
       return;

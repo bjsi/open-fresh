@@ -15,6 +15,7 @@ export enum SearchFail {
   "unknown" = "Unknown error",
 }
 export interface ProductSearchResult {
+  id: number;
   name: string;
   price: string;
   url: string;
