@@ -113,9 +113,33 @@
       ]
     },
     {
-      "name": "Red Enchilada Sauce",
-      "genericName": "Enchilada Sauce",
-      "totalQuantity": "400g",
+      "name": "Gluten-Free Tomato Sauce",
+      "genericName": "Tomato Sauce",
+      "totalQuantity": "300g",
+      "mealsUsedIn": [
+        "Gluten Free Enchiladas"
+      ]
+    },
+    {
+      "name": "Chili Powder",
+      "genericName": "Chili Powder",
+      "totalQuantity": "30g",
+      "mealsUsedIn": [
+        "Gluten Free Enchiladas"
+      ]
+    },
+    {
+      "name": "Garlic Powder",
+      "genericName": "Garlic Powder",
+      "totalQuantity": "20g",
+      "mealsUsedIn": [
+        "Gluten Free Enchiladas"
+      ]
+    },
+    {
+      "name": "Cumin",
+      "genericName": "Cumin",
+      "totalQuantity": "50g",
       "mealsUsedIn": [
         "Gluten Free Enchiladas"
       ]
