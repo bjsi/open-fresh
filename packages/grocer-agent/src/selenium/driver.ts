@@ -1,8 +1,9 @@
-import { WebDriver } from "selenium-webdriver";
+import { Builder } from "selenium-webdriver";
 
 // normal webdriver error stack sucks
 
-export function createDriverProxy(driver: WebDriver) {
+export async function createDriverProxy() {
+  const driver = await new Builder().forBrowser("chrome").build();
   return new Proxy(driver, {
     get(target, propKey) {
       // @ts-ignore

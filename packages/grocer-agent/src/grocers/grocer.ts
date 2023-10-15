@@ -1,5 +1,5 @@
 import { WebDriver } from "selenium-webdriver";
-import { Either } from "../types";
+import { Either } from "shared-lib";
 
 export enum LoginFail {
   "NoUsername" = "No username provided",
@@ -33,7 +33,7 @@ export const ADD_TO_CART_SUCCESS = "Successfully added to cart." as const;
 export abstract class Grocer {
   protected driver: WebDriver;
 
-  constructor(driver: WebDriver) {
+  protected constructor(driver: WebDriver) {
     this.driver = driver;
   }
 

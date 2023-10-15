@@ -1,30 +1,25 @@
 {
   "name": "open-fresh",
-  "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "packageManager": "yarn@3.6.4",
+  "private": true,
+  "workspaces": [
+    "packages/*"
+  ],
   "scripts": {
-    "test": "npx ts-node -T ./src/ai/aiTests.ts",
-    "dev": "npx ts-node -T ./src/main.ts"
-  },
-  "author": "",
-  "license": "ISC",
-  "devDependencies": {
-    "@types/selenium-webdriver": "^4.1.17",
-    "ts-node": "^10.9.1",
-    "typescript": "^5.2.2"
+    "client": "yarn workspace client dev",
+    "server": "yarn workspace server dev",
+    "plan": "yarn workspace cli plan",
+    "order": "yarn workspace cli order"
   },
   "dependencies": {
-    "@types/inquirer": "^9.0.3",
-    "chromedriver": "^117.0.3",
-    "commander": "^11.0.0",
     "dotenv": "^16.3.1",
-    "inquirer": "^8.0.0",
     "modelfusion": "^0.35.2",
-    "promptfoo": "^0.24.3",
-    "remeda": "^1.27.0",
-    "selenium-webdriver": "^4.13.0",
     "zod": "^3.21.4",
     "zod-to-json-schema": "^3.21.4"
+  },
+  "devDependencies": {
+    "@types/node": "^20.8.6",
+    "ts-node": "^10.9.1",
+    "typescript": "^5.2.2"
   }
 }

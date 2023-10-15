@@ -9,8 +9,9 @@ import {
   AddToCartFail,
 } from "./grocer";
 import dotenv from "dotenv";
-import { fail, success } from "../either";
 import { filterAsync } from "./helpers";
+import { success, fail } from "shared-lib";
+import { createDriverProxy } from "../selenium/driver";
 
 dotenv.config();
 
@@ -55,6 +56,11 @@ Rating: ${product.rating}
 };
 
 export class Sainsburys extends Grocer {
+  static async create() {
+    const driver = await createDriverProxy();
+    return new Sainsburys(driver);
+  }
+
   async search(args: { query: string; test?: boolean }) {
     console.log(`Searching for ${args.query}...`);
 

@@ -1,0 +1,12 @@
+{
+  "name": "shared-lib",
+  "version": "1.0.0",
+  "description": "",
+  "main": "src/index.ts",
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "promptfoo": "^0.24.3",
+    "remeda": "^1.27.0"
+  }
+}

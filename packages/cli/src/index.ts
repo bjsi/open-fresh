@@ -1,5 +1,4 @@
-import { Builder } from "selenium-webdriver";
-import { Sainsburys, formatProduct } from "./grocers/sainsburys";
+import { Sainsburys, formatProduct } from "grocer-agent";
 import dotenv from "dotenv";
 import {
   Ingredient,
@@ -7,22 +6,17 @@ import {
   formatIngredient,
   ingredientExtractorSchema,
   ingredientSchema,
-} from "./ai/prompts/extractIngredients";
-import { pickProduct } from "./ai/prompts/pickProduct";
+} from "shared-lib";
+import { pickProduct } from "shared-lib";
 import * as R from "remeda";
-import {
-  createMealPlan,
-  formatMeal,
-  recipeSchema,
-} from "./ai/prompts/createMealPlan";
-import { createDriverProxy } from "./selenium/driver";
+import { createMealPlan, formatMeal, recipeSchema } from "shared-lib";
 import { program } from "commander";
 import fs from "fs";
 import path from "path";
 import inquirer from "inquirer";
 import { z } from "zod";
-import { suggestReplacementIngredient } from "./ai/prompts/suggestReplacementIngredients";
-import { Grocer } from "./grocers/grocer";
+import { suggestReplacementIngredient } from "shared-lib";
+import { Grocer } from "grocer-agent";
 
 dotenv.config();
 
@@ -158,9 +152,9 @@ const addAllIngredientsToCart = async (args: {
 program.version("1.0.0");
 
 program
-  .command("create-meal-plan")
+  .command("plan")
   .option("-r, --requirements <file>", "Requirements file for the meal plan")
-  .description("Create and log a meal plan")
+  .description("Create a new meal plan")
   .action(async (options) => {
     let requirements: string | undefined;
 
@@ -258,8 +252,8 @@ function readMealPlanFile(fileName: string): MealPlanFileData | undefined {
 }
 
 program
-  .command("order-ingredients <mealPlanFile>")
-  .description("Order ingredients based on a meal plan file")
+  .command("order <mealPlanFile>")
+  .description("Order ingredients from a meal plan file")
   .action(async (mealPlanFile: string) => {
     const mealPlanData = readMealPlanFile(mealPlanFile);
     if (!mealPlanData) {
@@ -283,10 +277,7 @@ program
       });
     }
 
-    const driver = createDriverProxy(
-      await new Builder().forBrowser("chrome").build()
-    );
-    const grocer = new Sainsburys(driver);
+    const grocer = await Sainsburys.create();
 
     const loginRes = await grocer.login();
     await grocer.clearCart();
