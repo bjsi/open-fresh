@@ -1,11 +1,12 @@
 import {
   OpenAIChatMessage,
   OpenAIChatModel,
-  generateText,
-  streamText,
+  StructureStreamPart,
+  generateStructure,
+  streamStructure,
 } from "modelfusion";
 import { compilePrompt } from "./compilePrompt";
-import { recipeSchema } from "./createMealPlan";
+import { MealPlan, Recipe, recipeSchema } from "./createMealPlan";
 import { ZodSchema } from "./utils";
 import zodToJsonSchema from "zod-to-json-schema";
 
@@ -37,22 +38,43 @@ export type UpdateRecipeVars = {
 
 export async function updateRecipe(
   vars: UpdateRecipeVars,
-  stream: false
-): Promise<string>;
+  stream: false,
+  signal?: AbortSignal
+): Promise<Recipe>;
 export async function updateRecipe(
   vars: UpdateRecipeVars,
-  stream: true
-): Promise<AsyncIterable<string>>;
+  stream: true,
+  signal?: AbortSignal
+): Promise<AsyncIterable<StructureStreamPart<Recipe>>>;
 export async function updateRecipe(
   vars: UpdateRecipeVars,
-  stream: boolean
-): Promise<AsyncIterable<string> | string> {
+  stream: boolean,
+  signal?: AbortSignal
+): Promise<AsyncIterable<StructureStreamPart<Recipe>> | Recipe> {
   const model = new OpenAIChatModel({
     model: "gpt-4",
   });
   if (!stream) {
-    return await generateText(model, compilePrompt(updateRecipePrompt, vars));
+    return await generateStructure(
+      model,
+      updateRecipeStructure,
+      compilePrompt(updateRecipePrompt, vars),
+      {
+        run: {
+          abortSignal: signal,
+        },
+      }
+    );
   } else {
-    return await streamText(model, compilePrompt(updateRecipePrompt, vars));
+    return await streamStructure(
+      model,
+      updateRecipeStructure,
+      compilePrompt(updateRecipePrompt, vars),
+      {
+        run: {
+          abortSignal: signal,
+        },
+      }
+    );
   }
 }

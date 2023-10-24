@@ -1,11 +1,11 @@
 import { Sainsburys, formatProduct } from "grocer-agent";
 import dotenv from "dotenv";
 import {
-  Ingredient,
   extractIngredients,
   formatIngredient,
   ingredientExtractorSchema,
   ingredientSchema,
+  mealPlanFileSchema,
 } from "shared-lib";
 import { pickProduct } from "shared-lib";
 import * as R from "remeda";
@@ -70,10 +70,10 @@ const extractAndLogIngredients = async (args: { meals: string[] }) => {
 
 const addAllIngredientsToCart = async (args: {
   grocer: Grocer;
-  mealPlanData: MealPlanFileData;
+  mealPlanData: z.infer<typeof mealPlanFileSchema>;
   mealPlanFile: string;
   requirements: string;
-  ingredients: Ingredient[];
+  ingredients: z.infer<typeof ingredientSchema>[];
 }) => {
   for (let i = 0; i < args.ingredients.length; i++) {
     const ingredient = args.ingredients[i];
@@ -214,18 +214,10 @@ program
     );
   });
 
-const mealPlanFileSchema = z.object({
-  meals: recipeSchema.array(),
-  requirements: z.string(),
-  ingredients: ingredientSchema.array().optional(),
-});
-
-type MealPlanFileData = z.infer<typeof mealPlanFileSchema>;
-
-function writeMealPlanFile(
+export function writeMealPlanFile(
   fileName: string,
-  data: MealPlanFileData
-): MealPlanFileData {
+  data: z.infer<typeof mealPlanFileSchema>
+): z.infer<typeof mealPlanFileSchema> {
   fs.writeFileSync(
     path.join(__dirname, fileName),
     JSON.stringify(data, null, 2)
@@ -233,7 +225,9 @@ function writeMealPlanFile(
   return data;
 }
 
-function readMealPlanFile(fileName: string): MealPlanFileData | undefined {
+function readMealPlanFile(
+  fileName: string
+): z.infer<typeof mealPlanFileSchema> | undefined {
   try {
     const json = JSON.parse(
       fs.readFileSync(path.join(__dirname, fileName), "utf-8")
@@ -260,7 +254,7 @@ program
       return;
     }
 
-    let ingredients: Ingredient[];
+    let ingredients: z.infer<typeof ingredientSchema>[];
 
     if (mealPlanData.ingredients) {
       // Ingredients already exist in the JSON

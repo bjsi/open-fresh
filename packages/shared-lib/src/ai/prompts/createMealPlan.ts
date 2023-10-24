@@ -9,6 +9,7 @@ import { compilePrompt } from "./compilePrompt";
 import zodToJsonSchema from "zod-to-json-schema";
 import { z } from "zod";
 import { ZodSchema } from "./utils";
+import { ingredientSchema } from "./extractIngredients";
 
 export const mealPlanPrompt = [
   OpenAIChatMessage.system(
@@ -24,9 +25,11 @@ type CreateMealPlanVars = {
   requirements: string;
 };
 
-type MealPlan = z.infer<typeof createMealPlanSchema>;
+export type MealPlan = z.infer<typeof createMealPlanSchema>;
 
 export const recipeSchema = z.object({
+  mealType: z.string(),
+  day: z.string(),
   name: z.string(),
   ingredients: z
     .object({
@@ -35,8 +38,6 @@ export const recipeSchema = z.object({
     })
     .array(),
   instructions: z.string(),
-  mealType: z.string(),
-  day: z.string(),
 });
 
 export type Recipe = z.infer<typeof recipeSchema>;
@@ -44,6 +45,8 @@ export type Recipe = z.infer<typeof recipeSchema>;
 export const createMealPlanSchema = z.object({
   recipes: recipeSchema.array(),
 });
+
+export const partialCreateMealPlanSchema = createMealPlanSchema.deepPartial();
 
 export const createMealPlanFunction = {
   name: "createRecipes",
@@ -57,33 +60,73 @@ const createMealPlanStructure = {
   description: createMealPlanFunction.description,
 };
 
-export function formatMeal(meal: Recipe): string {
-  return `
-Day: ${meal.day}
-Meal type: ${meal.mealType}
-Name: ${meal.name}
-Ingredients:
-${meal.ingredients
-  .map((ingredient) => {
-    return `- ${ingredient.name} (${ingredient.grams}g)`;
-  })
-  .join("\n")}
-Instructions:
-${meal.instructions}
-`.trim();
+export const partialRecipeSchema = recipeSchema.deepPartial();
+
+const titleCase = (str: string) => {
+  return str
+    .split(" ")
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(" ");
+};
+
+export function formatMeal(meal: z.infer<typeof partialRecipeSchema>): string {
+  return [
+    formatHeading(meal.mealType, meal.day),
+    formatName(meal.name),
+    "<br/>",
+    formatIngredients(meal.ingredients),
+    "<br/>",
+    formatInstructions(meal.instructions),
+  ]
+    .filter(Boolean)
+    .join("\n\n")
+    .trim();
+}
+
+function formatHeading(mealType?: string, day?: string) {
+  return mealType
+    ? `### ${titleCase(mealType)}` + (day ? ` on ${day}` : "")
+    : "";
+}
+
+function formatName(name?: string): string {
+  return name ? `#### ${titleCase(name)}` : "";
+}
+
+function formatIngredients(
+  ingredients?: { name?: string; grams?: string }[]
+): string {
+  if (!ingredients) return "";
+
+  const formattedIngredients = ingredients
+    .filter((ingredient) => ingredient.name && ingredient.grams)
+    .map(
+      (ingredient) =>
+        `- ${ingredient.name} (${ingredient.grams?.replace("g$", "")}g)`
+    )
+    .join("\n");
+
+  return formattedIngredients ? `Ingredients:\n${formattedIngredients}` : "";
+}
+
+function formatInstructions(instructions?: string): string {
+  return instructions ? `Instructions:\n${instructions}` : "";
 }
 
 export async function createMealPlan(
   vars: CreateMealPlanVars,
-  stream: false
+  stream: false,
+  signal?: AbortSignal
 ): Promise<MealPlan>;
 export async function createMealPlan(
   vars: CreateMealPlanVars,
-  stream: true
+  stream: true,
+  signal?: AbortSignal
 ): Promise<AsyncIterable<StructureStreamPart<MealPlan>>>;
 export async function createMealPlan(
   vars: CreateMealPlanVars,
-  stream: boolean
+  stream: boolean,
+  signal?: AbortSignal
 ): Promise<
   | AsyncIterable<StructureStreamPart<MealPlan>>
   | z.infer<typeof createMealPlanSchema>
@@ -95,13 +138,29 @@ export async function createMealPlan(
     return await generateStructure(
       model,
       createMealPlanStructure,
-      compilePrompt(mealPlanPrompt, vars)
+      compilePrompt(mealPlanPrompt, vars),
+      {
+        run: {
+          abortSignal: signal,
+        },
+      }
     );
   } else {
     return await streamStructure(
       model,
       createMealPlanStructure,
-      compilePrompt(mealPlanPrompt, vars)
+      compilePrompt(mealPlanPrompt, vars),
+      {
+        run: {
+          abortSignal: signal,
+        },
+      }
     );
   }
 }
+
+export const mealPlanFileSchema = z.object({
+  meals: recipeSchema.array(),
+  requirements: z.string(),
+  ingredients: ingredientSchema.array().optional(),
+});

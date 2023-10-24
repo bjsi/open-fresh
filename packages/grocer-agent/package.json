@@ -2,11 +2,15 @@
   "name": "grocer-agent",
   "main": "src/index.ts",
   "packageManager": "yarn@3.6.4",
+  "scripts": {
+    "search": "npx ts-node src/grocers/sainsburysAPI.ts"
+  },
   "devDependencies": {
     "@types/selenium-webdriver": "^4.1.17"
   },
   "dependencies": {
     "chromedriver": "^117.0.3",
+    "node-fetch": "^3.3.2",
     "selenium-webdriver": "^4.13.0"
   }
 }

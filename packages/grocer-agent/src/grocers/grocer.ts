@@ -1,5 +1,16 @@
 import { WebDriver } from "selenium-webdriver";
-import { Either } from "shared-lib";
+
+interface Fail<L> {
+  readonly type: "fail";
+  readonly error: L;
+}
+
+interface Success<R> {
+  readonly type: "success";
+  readonly data: R;
+}
+
+type Either<L, R> = Fail<L> | Success<R>;
 
 export enum LoginFail {
   "NoUsername" = "No username provided",
