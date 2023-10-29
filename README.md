@@ -1,15 +1,34 @@
-# Open Fresh
+<h1 align="center">
+    <img src="https://raw.githubusercontent.com/bjsi/open-fresh/main/img/open-fresh-logo.png" alt="Open Fresh Logo" height="200">
+    <br/>
+    Open Fresh - 🍔 An Open Source, AI-enabled meal service
+</h1>
 
-An Open Source AI version of Hello Fresh.
+<h3 align="center">Generate a meal plan and have the AI order the ingredients for you. All you need to do is check out!</h3>
 
-## Features
+<br/>
 
-- The AI prepares a custom meal plan tailored to you.
-- The AI collects the ingredients required across all meals into a list.
-- The AI uses selenium to go to your grocer of choice and adds the ingredients to your cart.
-- All you need to do is check out!
+## 🚀 Overview
 
-## Command Line Interface
+Welcome to Open Fresh, an AI agent I built with GPT to help me improve my diet. The AI will generate a meal plan for you according to your tastes and order the ingredients from Sainsbury's. I use this every week to help me eat better and save time. I hope you find it useful too!
+
+### ✨ Features
+
+- **Custom Meal Plans**: The AI will prepares a custom meal plan tailored to you based on whatever dietary requirements you specify.
+- **Automated Grocery Shopping**: The AI agent uses Selenium to log in to your grocer of choice and add the ingredients to your cart.
+- **Smart Ingredient Substitution**: If an ingredient is unavailable, the AI will find a suitable replacement and update the recipe.
+
+<div align="center">
+    <img src="https://raw.githubusercontent.com/bjsi/open-fresh/main/img/open-fresh-example.jpeg" alt="Open Fresh Example">
+</div>
+
+### 📽️ Tutorial
+
+- TODO: Open Fresh will be hosted on a website soon. In the meantime, you can run it locally using the instructions below.
+
+## How To Run
+
+### Command Line Interface
 
 The program is split into two parts - creating a meal plan and ordering ingredients.
 
